@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="760" height="1040" viewBox="0 0 760 1040" id="00 UI kit">
+  <defs>
+    
+  </defs>
+  <rect x="0" y="0" width="760" height="1040" fill="#FFFFFF" id="Background"/>
+  <text x="40" y="62" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="28" font-weight="800" fill="#1A1430" id="LocalEyes — UI kit">LocalEyes — UI kit</text>
+  <text x="40" y="88" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="13" font-weight="400" fill="#6E6886" id="Design tokens taken from lib">Design tokens taken from lib/core/app_theme.dart</text>
+  <g id="Colours">
+  <text x="40" y="142" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1A1430" id="Colours">Colours</text>
+  <rect x="40" y="162" width="96" height="96" rx="20" fill="#6C3CE9" id="Colour / Brand"/>
+  <text x="40" y="280" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1430" id="Brand">Brand</text>
+  <text x="40" y="296" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6E6886" id="#6C3CE9">#6C3CE9</text>
+  <rect x="160" y="162" width="96" height="96" rx="20" fill="#3B1A92" id="Colour / Brand deep"/>
+  <text x="160" y="280" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1430" id="Brand deep">Brand deep</text>
+  <text x="160" y="296" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6E6886" id="#3B1A92">#3B1A92</text>
+  <rect x="280" y="162" width="96" height="96" rx="20" fill="#F0EAFF" id="Colour / Brand soft"/>
+  <text x="280" y="280" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1430" id="Brand soft">Brand soft</text>
+  <text x="280" y="296" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6E6886" id="#F0EAFF">#F0EAFF</text>
+  <rect x="400" y="162" width="96" height="96" rx="20" fill="#1A1430" id="Colour / Ink"/>
+  <text x="400" y="280" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1430" id="Ink">Ink</text>
+  <text x="400" y="296" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6E6886" id="#1A1430">#1A1430</text>
+  <rect x="520" y="162" width="96" height="96" rx="20" fill="#6E6886" id="Colour / Ink muted"/>
+  <text x="520" y="280" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1430" id="Ink muted">Ink muted</text>
+  <text x="520" y="296" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6E6886" id="#6E6886">#6E6886</text>
+  <rect x="40" y="312" width="96" height="96" rx="20" fill="#F7F5FD" stroke="#E8E2F6" stroke-width="1" id="Colour / Canvas"/>
+  <text x="40" y="430" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1430" id="Canvas">Canvas</text>
+  <text x="40" y="446" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6E6886" id="#F7F5FD">#F7F5FD</text>
+  <rect x="160" y="312" width="96" height="96" rx="20" fill="#E8E2F6" stroke="#E8E2F6" stroke-width="1" id="Colour / Line"/>
+  <text x="160" y="430" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1430" id="Line">Line</text>
+  <text x="160" y="446" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6E6886" id="#E8E2F6">#E8E2F6</text>
+  <rect x="280" y="312" width="96" height="96" rx="20" fill="#F5A623" id="Colour / Star"/>
+  <text x="280" y="430" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1430" id="Star">Star</text>
+  <text x="280" y="446" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6E6886" id="#F5A623">#F5A623</text>
+  <rect x="400" y="312" width="96" height="96" rx="20" fill="#17A673" id="Colour / Success"/>
+  <text x="400" y="430" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#1A1430" id="Success">Success</text>
+  <text x="400" y="446" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11" font-weight="400" fill="#6E6886" id="#17A673">#17A673</text>
+  </g>
+  <g id="Typography">
+  <text x="40" y="500" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1A1430" id="Typography">Typography</text>
+  <text x="40" y="536" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#6E6886" id="Headline 26 / 800">Headline 26 / 800</text>
+  <text x="220" y="536" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="26" font-weight="800" fill="#1A1430" id="Find your local">Find your local</text>
+  <text x="40" y="578" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#6E6886" id="Headline 22 / 700">Headline 22 / 700</text>
+  <text x="220" y="578" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#1A1430" id="Kolsai Lakes: slow hike">Kolsai Lakes: slow hike</text>
+  <text x="40" y="616" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#6E6886" id="Title 19 / 700">Title 19 / 700</text>
+  <text x="220" y="616" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1A1430" id="Tours near Almaty">Tours near Almaty</text>
+  <text x="40" y="648" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#6E6886" id="Title 16 / 600">Title 16 / 600</text>
+  <text x="220" y="648" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#1A1430" id="What is included">What is included</text>
+  <text x="40" y="678" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#6E6886" id="Body 15 / 400">Body 15 / 400</text>
+  <text x="220" y="678" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="15" font-weight="400" fill="#1A1430" id="A full day in the Kolsai val">A full day in the Kolsai valley with a calm pace.</text>
+  <text x="40" y="704" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#6E6886" id="Caption 12 / 400">Caption 12 / 400</text>
+  <text x="220" y="704" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#1A1430" id="7 tours from verified local ">7 tours from verified local guides</text>
+  </g>
+  <g id="Components">
+  <text x="40" y="766" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="19" font-weight="700" fill="#1A1430" id="Components">Components</text>
+  <rect x="40" y="786" width="230" height="54" rx="27" fill="#6C3CE9" id="Button / primary"/>
+  <path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM7.17 14.75l.03-.12.9-1.63h7.45a2 2 0 0 0 1.75-1.03l3.58-6.49L19.13 5l-3.6 6.5H8.53L4.27 2.5H1v2h2l3.6 7.59-1.35 2.44A2 2 0 0 0 7 17.5h12v-2H7.42a.25.25 0 0 1-.25-.25z" transform="translate(104,803) scale(0.8333)" fill="#FFFFFF" id="cart"/>
+  <text x="132" y="820" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="15.5" font-weight="700" fill="#FFFFFF" id="Add to cart">Add to cart</text>
+  <rect x="290" y="789" width="140" height="48" rx="24" fill="#FFFFFF" stroke="#E8E2F6" stroke-width="1" id="Button / outline"/>
+  <text x="360" y="819" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="14.5" font-weight="600" fill="#6C3CE9" text-anchor="middle" id="Message">Message</text>
+  <rect x="460" y="795" width="106" height="32" rx="16.0" fill="#F0EAFF" id="Chip / Mountains"/>
+  <path d="M21.41 11.58l-9-9A2 2 0 0 0 11 2H4a2 2 0 0 0-2 2v7c0 .55.22 1.05.59 1.42l9 9a2 2 0 0 0 2.82 0l7-7a2 2 0 0 0 0-2.84zM6.5 8A1.5 1.5 0 1 1 8 6.5 1.5 1.5 0 0 1 6.5 8z" transform="translate(472,804.0) scale(0.5833)" fill="#3B1A92" id="tag"/>
+  <text x="491" y="815.5" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#3B1A92" id="Mountains">Mountains</text>
+  <rect x="576" y="795" width="80" height="32" rx="16.0" fill="#FFFFFF" stroke="#E8E2F6" stroke-width="1" id="Chip / Moderate"/>
+  <text x="588" y="815.5" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#6E6886" id="Moderate">Moderate</text>
+  <rect x="460" y="835" width="106" height="32" rx="16.0" fill="#000000" id="Chip / Top rated"/>
+  <path d="M23 12l-2.44-2.79.34-3.69-3.61-.82-1.89-3.2L12 2.96 8.6 1.5 6.71 4.69 3.1 5.5l.34 3.7L1 12l2.44 2.79-.34 3.7 3.61.82L8.6 22.5l3.4-1.47 3.4 1.46 1.89-3.19 3.61-.82-.34-3.69L23 12zm-12.91 4.72-3.8-3.81 1.48-1.48 2.32 2.33 5.85-5.87 1.48 1.48-7.33 7.35z" transform="translate(472,844.0) scale(0.5833)" fill="#FFFFFF" id="verified"/>
+  <text x="491" y="855.5" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#FFFFFF" id="Top rated">Top rated</text>
+  <rect x="576" y="835" width="99" height="32" rx="16.0" fill="#E7F6F0" id="Chip / Verified"/>
+  <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z" transform="translate(588,844.0) scale(0.5833)" fill="#17A673" id="shield"/>
+  <text x="607" y="855.5" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12.5" font-weight="600" fill="#17A673" id="Verified">Verified</text>
+  <text x="40" y="898" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#6E6886" id="Bookmark badge">Bookmark badge</text>
+  <circle cx="60" cy="936" r="20" fill="#1A1430" opacity="0.38" id="Badge / default"/>
+  <path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2zm0 15-5-2.18L7 18V5h10v13z" transform="translate(50,926) scale(0.8333)" fill="#FFFFFF" id="bookmark"/>
+  <circle cx="112" cy="936" r="20" fill="#FFFFFF" stroke="#E8E2F6" stroke-width="1" id="Badge / saved"/>
+  <path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z" transform="translate(102,926) scale(0.8333)" fill="#6C3CE9" id="bookmark_fill"/>
+  <text x="190" y="898" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#6E6886" id="Stepper">Stepper</text>
+  <rect x="190" y="916" width="134" height="40" rx="20" fill="#FFFFFF" stroke="#E8E2F6" stroke-width="1" id="Stepper"/>
+  <path d="M209 936 h14" stroke="#6C3CE9" stroke-width="2.2" stroke-linecap="round"/>
+  <text x="257" y="942" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#1A1430" text-anchor="middle" id="2">2</text>
+  <path d="M291 936 h14 M298 929 v14" stroke="#6C3CE9" stroke-width="2.2" stroke-linecap="round"/>
+  <text x="360" y="898" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="11.5" font-weight="600" fill="#6E6886" id="Tab bar">Tab bar</text>
+  <rect x="360" y="912" width="358" height="48" rx="24" fill="#F0EAFF" id="Tab bar"/>
+  <rect x="364" y="916" width="116" height="40" rx="20" fill="#FFFFFF" id="Tab / selected"/>
+  <text x="422" y="941" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#6C3CE9" text-anchor="middle" id="About">About</text>
+  <text x="539" y="941" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="14" font-weight="500" fill="#6E6886" text-anchor="middle" id="Route">Route</text>
+  <text x="656" y="941" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="14" font-weight="500" fill="#6E6886" text-anchor="middle" id="Reviews">Reviews</text>
+  </g>
+  <text x="40" y="1010" font-family="Inter, SF Pro Text, Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#6E6886" id="Screens: 01 Explore · 02 Tou">Screens: 01 Explore · 02 Tour detail · 03 Profile · frame 390 × 844</text>
+</svg>
