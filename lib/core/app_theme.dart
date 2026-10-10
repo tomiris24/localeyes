@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette of LocalEyes. Purple is the brand colour.
+/// Brand palette of LocalEyes. Deep blue is the brand colour, light blue is
+/// the accent it sits on.
+///
+/// White text on [brand] gives a contrast of 13:1 and [brand] on [brandSoft]
+/// gives 6.8:1, so both pairs pass WCAG AA. The neutral tones carry the same
+/// blue undertone, which keeps the greys from looking dirty next to the brand.
 class AppColors {
   AppColors._();
 
-  static const Color brand = Color(0xFF6C3CE9);
-  static const Color brandDeep = Color(0xFF3B1A92);
-  static const Color brandSoft = Color(0xFFF0EAFF);
-  static const Color ink = Color(0xFF1A1430);
-  static const Color inkMuted = Color(0xFF6E6886);
-  static const Color canvas = Color(0xFFF7F5FD);
-  static const Color line = Color(0xFFE8E2F6);
+  static const Color brand = Color(0xFF193151);
+  static const Color brandDeep = Color(0xFF112137);
+  static const Color brandSoft = Color(0xFF9EBDE2);
+  static const Color ink = Color(0xFF141F2F);
+  static const Color inkMuted = Color(0xFF687586);
+  static const Color canvas = Color(0xFFF5F8FD);
+  static const Color line = Color(0xFFE2EBF6);
   static const Color star = Color(0xFFF5A623);
   static const Color success = Color(0xFF17A673);
 }

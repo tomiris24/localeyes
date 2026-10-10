@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
 import '../state/app_state.dart';
+import 'register_screen.dart';
 import '../widgets/avatar_circle.dart';
 import '../widgets/section_header.dart';
 import '../widgets/tag_chip.dart';
@@ -135,6 +136,16 @@ class ProfileScreen extends StatelessWidget {
                 icon: Icons.translate_rounded,
                 title: 'App language',
                 subtitle: 'English',
+              ),
+              const SizedBox(height: AppSpacing.md),
+              OutlinedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const RegisterScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.person_add_alt_rounded, size: 19),
+                label: const Text('Create a new account'),
               ),
             ],
           ),

@@ -337,7 +337,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    color: selected ? AppColors.brand : AppColors.inkMuted,
+                    // The soft blue track is too dark for the muted grey:
+                    // the deep brand colour keeps unselected tabs readable.
+                    color: selected ? AppColors.brand : AppColors.brandDeep,
                   ),
                 ),
               ),
