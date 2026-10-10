@@ -12,9 +12,6 @@ Author: Tomiris Suleimenova, Narxoz University.
 
 ## The problem
 
-In 50 Mom Test interviews (47 used after cleaning: 34 travellers, 13 guides)
-two things came up again and again:
-
 * **Travellers** can find guides easily, but they cannot *choose* one. Profiles
   all look the same and never say the things that actually matter: difficulty,
   real group size, walking time, how good the guide's English really is.
@@ -31,8 +28,7 @@ guide **fill empty dates with clients they can trust**.
 * **Travellers** — independent travellers aged 23–35 who search on Instagram,
   TikTok and Google Maps, read reviews, and still cannot tell which guide fits
   their interests, pace, language and group size.
-* **Guides** — independent guides in Almaty, 23–40 years old, 1–7 years of
-  experience, speaking RU / EN / KZ.
+* **Guides** — independent guides in Almaty and Worldwide, 23–40 years old, 1–7 years of experience, speaking RU / EN / KZ.
 
 ---
 
@@ -50,6 +46,8 @@ guide **fill empty dates with clients they can trust**.
 3. **Saved** — everything the bookmark badge collected.
 4. **Profile** — the traveller's own profile, interests and safety settings.
 5. **Cart** — what was added from the detail screen, with the booking request.
+6. **Register** — account creation with full form validation, a terms
+   checkbox and a role dropdown (reached from Profile).
 
 ## Interactive features (StatefulWidget + setState)
 
@@ -63,6 +61,7 @@ guide **fill empty dates with clients they can trust**.
 | Group size stepper that recalculates the total price | `lib/screens/tour_detail_screen.dart` |
 | Date picker chips | `lib/screens/tour_detail_screen.dart` |
 | Bottom navigation | `lib/screens/home_shell.dart` |
+| Registration form: live validation, password visibility, terms checkbox, role dropdown | `lib/screens/register_screen.dart` |
 
 Saved tours and the cart live in one `ChangeNotifier` (`lib/state/app_state.dart`)
 shared through an `InheritedNotifier`, so the bookmark reacts the same way on
@@ -88,11 +87,15 @@ place where BLoC will go in Milestone 3.
 `test/layout_overflow_test.dart` opens the feed, the saved screen, the profile
 and **every** tour detail screen (including all three tabs and the bottom of the
 page) at six screen sizes, from 320×568 to 1280×800, and fails if Flutter
-reports any overflow.
+reports any overflow. `test/register_form_test.dart` does the same for the
+registration screen at four sizes, with every field in its error state — the
+tallest the form can get.
 
 ```
 flutter test
-# 15 tests passed
+# 32 tests passed
+flutter analyze
+# No issues found
 ```
 
 ## Design files
@@ -109,7 +112,8 @@ lib/
 ├── models/        guide.dart, review.dart, tour.dart
 ├── data/          mock_tours.dart — demo data, replaced by a REST API later
 ├── state/         app_state.dart — saved tours and cart, shared via AppScope
-├── screens/       home_shell, discovery, tour_detail, saved, cart, profile
+├── screens/       home_shell, discovery, tour_detail, saved, cart, profile,
+│                  register
 └── widgets/       tour_card, cover_header, booking_bar, bookmark_badge,
                    tag_chip, rating_stars, fact_tile, guide_strip,
                    quantity_stepper, avatar_circle, section_header,
@@ -135,19 +139,4 @@ Tested with Flutter 3.47.2 (Dart 3.13.2) on the iOS Simulator.
 * **Milestone 2** — REST API, real guide and tour data, chat.
 * **Milestone 3** — local database, BLoC architecture, AI matching.
 
-## Photo credits
 
-All cover photos come from Wikimedia Commons and are used under free licences.
-
-| Image | Author | Licence |
-| --- | --- | --- |
-| Kolsai lakes | Dimash Kenesbek | CC BY-SA 4.0 |
-| Charyn Canyon | Bgag | CC0 |
-| Shymbulak | Matti Blume | CC BY-SA 4.0 |
-| Medeu | Matti Blume | CC BY-SA 4.0 |
-| Big Almaty Lake | BitLord~ruwiki | CC BY-SA 4.0 |
-| Kok Tobe sunset | User:Vmenkov | CC BY-SA 3.0 |
-| Zenkov Cathedral | Bgag | CC0 |
-
-Guide and traveller avatars are drawn from initials, so no photo of a real
-person is used in the demo.
