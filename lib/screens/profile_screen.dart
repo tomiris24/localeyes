@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
 import '../state/app_state.dart';
+import 'become_local_screen.dart';
 import 'register_screen.dart';
 import '../widgets/avatar_circle.dart';
 import '../widgets/section_header.dart';
@@ -138,6 +139,18 @@ class ProfileScreen extends StatelessWidget {
                 subtitle: 'English',
               ),
               const SizedBox(height: AppSpacing.md),
+              // Anyone can switch sides. A traveller who liked the city is the
+              // most likely person to sign up as a local back home.
+              ElevatedButton.icon(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const BecomeLocalScreen(),
+                  ),
+                ),
+                icon: const Icon(Icons.waving_hand_rounded, size: 19),
+                label: const Text('Become a local'),
+              ),
+              const SizedBox(height: AppSpacing.sm),
               OutlinedButton.icon(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(

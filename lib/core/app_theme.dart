@@ -139,30 +139,18 @@ class AppTheme {
           textStyle: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w600),
         ),
       ),
-      navigationBarTheme: NavigationBarThemeData(
+      // The root screen uses a classic BottomNavigationBar, so its colours
+      // are set here once instead of on every tab.
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.white,
-        surfaceTintColor: Colors.transparent,
-        indicatorColor: AppColors.brandSoft,
+        type: BottomNavigationBarType.fixed,
         elevation: 0,
-        height: 68,
-        labelTextStyle: WidgetStateProperty.resolveWith(
-          (states) => TextStyle(
-            fontSize: 12,
-            fontWeight: states.contains(WidgetState.selected)
-                ? FontWeight.w700
-                : FontWeight.w500,
-            color: states.contains(WidgetState.selected)
-                ? AppColors.brand
-                : AppColors.inkMuted,
-          ),
-        ),
-        iconTheme: WidgetStateProperty.resolveWith(
-          (states) => IconThemeData(
-            size: 24,
-            color: states.contains(WidgetState.selected)
-                ? AppColors.brand
-                : AppColors.inkMuted,
-          ),
+        selectedItemColor: AppColors.brand,
+        unselectedItemColor: AppColors.inkMuted,
+        selectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w500,
         ),
       ),
       snackBarTheme: const SnackBarThemeData(

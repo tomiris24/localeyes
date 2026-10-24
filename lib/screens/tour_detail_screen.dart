@@ -17,6 +17,14 @@ import 'cart_screen.dart';
 
 /// Detail screen of one tour — the "item detail" screen of the app.
 ///
+/// It is opened with `Navigator.push` and receives the **whole** [Tour] object
+/// as a constructor argument, so it can show the title, description, photo,
+/// price and category without looking anything up again.
+///
+/// There are two ways back, and both call `Navigator.pop`:
+///  * the back arrow the [AppBar] adds automatically, and
+///  * the "Back to tours" button at the bottom of the body.
+///
 /// Layout plan:
 ///  * [CoverHeader] is a Stack: photo + gradients + bookmark badge on top.
 ///  * Title, rating, price and category badges use Row and Wrap.
@@ -95,6 +103,12 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
     final bool inCart = app.isInCart(_tour.id);
 
     return Scaffold(
+      // Because this screen was pushed onto the navigator, the AppBar adds a
+      // back arrow by itself, and tapping it calls Navigator.pop for us.
+      appBar: AppBar(
+        title: Text(_tour.title, maxLines: 1, overflow: TextOverflow.ellipsis),
+        titleSpacing: 0,
+      ),
       body: LayoutBuilder(
         builder: (BuildContext context, BoxConstraints constraints) {
           final bool isWide = constraints.maxWidth >= AppSpacing.wideBreakpoint;
@@ -133,7 +147,6 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
             isSaved: isSaved,
             onToggleSaved: _toggleSaved,
             height: coverHeight,
-            topInset: MediaQuery.paddingOf(context).top,
             onShare: () => _showMessage('Sharing is coming in Milestone 2'),
           ),
           Padding(
@@ -149,6 +162,8 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                 ..._mainColumn(context),
                 const SizedBox(height: AppSpacing.xl),
                 ..._sideColumn(context),
+                const SizedBox(height: AppSpacing.xl),
+                _buildBackButton(context),
               ],
             ),
           ),
@@ -187,6 +202,8 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                       ),
                       const SizedBox(height: AppSpacing.xl),
                       ..._sideColumn(context),
+                      const SizedBox(height: AppSpacing.xl),
+                      _buildBackButton(context),
                     ],
                   ),
                 ),
@@ -304,6 +321,20 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
       const SizedBox(height: AppSpacing.xl),
       _buildGuestPicker(context),
     ];
+  }
+
+  /// The second way back, inside the body of the screen. `Navigator.pop`
+  /// removes this screen from the stack and shows the tab we came from,
+  /// exactly as it was left.
+  Widget _buildBackButton(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: OutlinedButton.icon(
+        onPressed: () => Navigator.of(context).pop(),
+        icon: const Icon(Icons.arrow_back_rounded, size: 19),
+        label: const Text('Back to tours'),
+      ),
+    );
   }
 
   Widget _buildTabBar(BuildContext context) {

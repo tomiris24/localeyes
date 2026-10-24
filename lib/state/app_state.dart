@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../data/mock_locals.dart';
 import '../data/mock_tours.dart';
+import '../models/local_person.dart';
 import '../models/tour.dart';
 
 /// One tour added to the cart, together with the options the traveller picked.
@@ -15,6 +17,41 @@ class CartItem {
   double get total => tour.totalFor(guests);
 }
 
+/// Where a meetup request stands. A local is a person with a job, not a
+/// business, so "declined" is a normal outcome and the UI says so plainly.
+enum MeetupStatus { waiting, accepted, declined }
+
+extension MeetupStatusLabel on MeetupStatus {
+  String get label => switch (this) {
+    MeetupStatus.waiting => 'Waiting for a reply',
+    MeetupStatus.accepted => 'Confirmed',
+    MeetupStatus.declined => 'Declined',
+  };
+}
+
+/// One "let's meet" request sent to a local.
+class MeetupRequest {
+  const MeetupRequest({
+    required this.localId,
+    required this.day,
+    required this.timeOfDay,
+    required this.kind,
+    required this.place,
+    required this.message,
+    this.status = MeetupStatus.waiting,
+  });
+
+  final String localId;
+  final String day;
+  final String timeOfDay;
+  final HangoutKind kind;
+  final String place;
+  final String message;
+  final MeetupStatus status;
+
+  LocalPerson get local => MockLocals.byId(localId);
+}
+
 /// App-wide state shared by every screen: saved tours and the cart.
 ///
 /// It is a plain [ChangeNotifier] on purpose — no extra packages in Milestone 1.
@@ -22,6 +59,16 @@ class CartItem {
 class AppState extends ChangeNotifier {
   final Set<String> _savedIds = <String>{'t3'};
   final List<CartItem> _cart = <CartItem>[];
+  final Set<String> _savedLocalIds = <String>{'l3'};
+  final List<MeetupRequest> _meetups = <MeetupRequest>[];
+
+  /// What the traveller said they are into. Used to explain why a local is a
+  /// good match; in Milestone 3 this feeds the real matching model.
+  final Set<String> _myInterests = <String>{
+    'Coffee',
+    'Mountains',
+    'Photography',
+  };
 
   Set<String> get savedIds => Set<String>.unmodifiable(_savedIds);
   List<CartItem> get cart => List<CartItem>.unmodifiable(_cart);
@@ -63,6 +110,52 @@ class AppState extends ChangeNotifier {
 
   void clearCart() {
     _cart.clear();
+    notifyListeners();
+  }
+
+  // --- Locals -------------------------------------------------------------
+
+  Set<String> get savedLocalIds => Set<String>.unmodifiable(_savedLocalIds);
+  Set<String> get myInterests => Set<String>.unmodifiable(_myInterests);
+  List<MeetupRequest> get meetups => List<MeetupRequest>.unmodifiable(_meetups);
+
+  List<LocalPerson> get savedLocals => MockLocals.people
+      .where((LocalPerson p) => _savedLocalIds.contains(p.id))
+      .toList();
+
+  bool isLocalSaved(String localId) => _savedLocalIds.contains(localId);
+
+  /// Returns true when the local ends up saved, so the UI can show the right
+  /// message — the same contract as [toggleSaved].
+  bool toggleSavedLocal(String localId) {
+    final bool nowSaved = !_savedLocalIds.contains(localId);
+    if (nowSaved) {
+      _savedLocalIds.add(localId);
+    } else {
+      _savedLocalIds.remove(localId);
+    }
+    notifyListeners();
+    return nowSaved;
+  }
+
+  void toggleInterest(String interest) {
+    if (!_myInterests.remove(interest)) _myInterests.add(interest);
+    notifyListeners();
+  }
+
+  bool hasPendingMeetupWith(String localId) => _meetups.any(
+    (MeetupRequest m) =>
+        m.localId == localId && m.status == MeetupStatus.waiting,
+  );
+
+  void sendMeetupRequest(MeetupRequest request) {
+    _meetups.removeWhere((MeetupRequest m) => m.localId == request.localId);
+    _meetups.add(request);
+    notifyListeners();
+  }
+
+  void cancelMeetupRequest(String localId) {
+    _meetups.removeWhere((MeetupRequest m) => m.localId == localId);
     notifyListeners();
   }
 }

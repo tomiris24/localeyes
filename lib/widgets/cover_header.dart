@@ -6,7 +6,10 @@ import 'bookmark_badge.dart';
 import 'tag_chip.dart';
 
 /// The cover of the detail screen: a [Stack] with the photo, two gradients,
-/// the navigation buttons and the bookmark badge on top of the image.
+/// the share button and the bookmark badge on top of the image.
+///
+/// Going back is handled by the detail screen's [AppBar], so this cover does
+/// not draw a back arrow of its own.
 class CoverHeader extends StatelessWidget {
   const CoverHeader({
     super.key,
@@ -14,9 +17,7 @@ class CoverHeader extends StatelessWidget {
     required this.isSaved,
     required this.onToggleSaved,
     required this.height,
-    this.topInset = 0,
     this.borderRadius = BorderRadius.zero,
-    this.onBack,
     this.onShare,
   });
 
@@ -24,9 +25,7 @@ class CoverHeader extends StatelessWidget {
   final bool isSaved;
   final VoidCallback onToggleSaved;
   final double height;
-  final double topInset;
   final BorderRadius borderRadius;
-  final VoidCallback? onBack;
   final VoidCallback? onShare;
 
   @override
@@ -64,19 +63,9 @@ class CoverHeader extends StatelessWidget {
               ),
             ),
 
-            // 4. Back and share buttons.
+            // 4. Share and bookmark — the interactive part of the cover.
             Positioned(
-              top: topInset + AppSpacing.md,
-              left: AppSpacing.lg,
-              child: CoverIconButton(
-                icon: Icons.arrow_back_rounded,
-                onPressed: onBack ?? () => Navigator.of(context).maybePop(),
-              ),
-            ),
-
-            // 5. The bookmark badge — the interactive part of the cover.
-            Positioned(
-              top: topInset + AppSpacing.md,
+              top: AppSpacing.md,
               right: AppSpacing.lg,
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -93,7 +82,7 @@ class CoverHeader extends StatelessWidget {
               ),
             ),
 
-            // 6. Location and badges. A Wrap keeps them on screen on any width.
+            // 5. Location and badges. A Wrap keeps them on screen on any width.
             Positioned(
               left: AppSpacing.lg,
               right: AppSpacing.lg,

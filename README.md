@@ -68,9 +68,83 @@ shared through an `InheritedNotifier`, so the bookmark reacts the same way on
 every screen. No state-management package is used in Milestone 1 — this is the
 place where BLoC will go in Milestone 3.
 
+## Navigation
+
+The app has one root screen with a `BottomNavigationBar` and pushes a detail
+screen on top of it.
+
+### Root screen — three tabs
+
+`lib/screens/home_shell.dart` holds the selected tab index in a
+`StatefulWidget` and swaps the body with `setState`:
+
+| Tab | Screen | What it shows |
+| --- | --- | --- |
+| 1 · Explore (feed) | `discovery_screen.dart` | 7 tours as cards with a photo, title, category and price per person |
+| 2 · Saved (favourites) | `saved_screen.dart` | the tours the bookmark badge collected |
+| 3 · Profile | `profile_screen.dart` | the traveller's profile, interests and settings |
+
+The three tabs sit inside an `IndexedStack`, so they are built once and kept
+alive. Switching tabs — or coming back from the detail screen — does **not**
+rebuild them: the search text, the category chip and the scroll position are
+exactly where they were left.
+
+### Pushing the detail screen with the object
+
+Tapping a card calls `Navigator.push` and hands the **whole `Tour` object** to
+the next screen as a constructor argument, so the detail screen already has the
+title, summary, photo, price and category and never has to look them up again:
+
+```dart
+// lib/screens/discovery_screen.dart
+void _openTour(Tour tour) {
+  Navigator.of(context).push(
+    MaterialPageRoute<void>(
+      builder: (BuildContext context) => TourDetailScreen(tour: tour),
+    ),
+  );
+}
+```
+
+```dart
+// lib/screens/tour_detail_screen.dart
+class TourDetailScreen extends StatefulWidget {
+  const TourDetailScreen({super.key, required this.tour});
+
+  final Tour tour; // the complete object that was passed in
+```
+
+The Saved tab pushes the same screen the same way, so a tour opens identically
+from either tab.
+
+### Two ways back, both `Navigator.pop`
+
+1. **The AppBar arrow.** `TourDetailScreen` has an `AppBar` with the tour title.
+   Because the screen was pushed onto the navigator, Flutter adds the back arrow
+   automatically and it calls `Navigator.pop` for us.
+2. **The in-body button.** At the bottom of the detail screen there is a
+   "Back to tours" button:
+
+```dart
+OutlinedButton.icon(
+  onPressed: () => Navigator.of(context).pop(),
+  icon: const Icon(Icons.arrow_back_rounded, size: 19),
+  label: const Text('Back to tours'),
+)
+```
+
+Both return to the tab that opened the screen without restarting it. Saved
+tours and the cart live in the shared `AppState`, and the tabs survive in the
+`IndexedStack`, so anything bookmarked or added to the cart on the detail screen
+is already visible when the screen pops.
+
+`test/layout_overflow_test.dart` checks all of this: that a tap pushes
+`TourDetailScreen` carrying the right tour data, that both back buttons pop it,
+and that a search typed before opening a tour is still in the field afterwards.
+
 ## Layout and responsiveness
 
-* `Stack` — cover photo, gradients, back / share buttons and the bookmark badge
+* `Stack` — cover photo, gradients, share button and the bookmark badge
   (`lib/widgets/cover_header.dart`), and the price badge on every card.
 * `Row` + `Expanded` — title next to price, rating next to duration, and the
   sticky bar where the main button takes all the remaining width
@@ -93,7 +167,7 @@ tallest the form can get.
 
 ```
 flutter test
-# 32 tests passed
+# 35 tests passed
 flutter analyze
 # No issues found
 ```
