@@ -1,23 +1,36 @@
 import 'package:flutter/material.dart';
 
-/// Brand palette of LocalEyes. Deep blue is the brand colour, light blue is
+/// Brand palette of LocalEyes. Deep teal is the brand colour, pale teal is
 /// the accent it sits on.
 ///
-/// White text on [brand] gives a contrast of 13:1 and [brand] on [brandSoft]
-/// gives 6.8:1, so both pairs pass WCAG AA. The neutral tones carry the same
-/// blue undertone, which keeps the greys from looking dirty next to the brand.
+/// Teal rather than the blue every booking brand already owns: it keeps the
+/// trust blue reads as, picks up the water and forest in the photography
+/// instead of fighting it, and carries no loaded meaning in any of the
+/// markets the app is headed for.
+///
+/// White on [brand] gives 5.5:1, [brand] on [canvas] gives 5.0:1 and
+/// [brandSoft] on [ink] gives 13:1, so every pair passes WCAG AA.
+///
+/// [success] is the same teal on purpose. A separate green next to a green
+/// brand stops reading as a signal, so the verified badge and the "free
+/// today" pill borrow the accent rather than competing with it.
+///
+/// [canvas] and [line] are deliberately neutral rather than blue-tinted. The
+/// feed is wall-to-wall photography, and a tinted background casts its hue
+/// over every photo sitting on it — neutral greys let the pictures set the
+/// colour of the screen.
 class AppColors {
   AppColors._();
 
-  static const Color brand = Color(0xFF193151);
-  static const Color brandDeep = Color(0xFF112137);
-  static const Color brandSoft = Color(0xFF9EBDE2);
+  static const Color brand = Color(0xFF0F766E);
+  static const Color brandDeep = Color(0xFF115E59);
+  static const Color brandSoft = Color(0xFF99F6E4);
   static const Color ink = Color(0xFF141F2F);
   static const Color inkMuted = Color(0xFF687586);
-  static const Color canvas = Color(0xFFF5F8FD);
-  static const Color line = Color(0xFFE2EBF6);
+  static const Color canvas = Color(0xFFF4F4F5);
+  static const Color line = Color(0xFFE7E7EA);
   static const Color star = Color(0xFFF5A623);
-  static const Color success = Color(0xFF17A673);
+  static const Color success = Color(0xFF0F766E);
 }
 
 /// Shared spacing and radius values, so every screen uses the same rhythm.

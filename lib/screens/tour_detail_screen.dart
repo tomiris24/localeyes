@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/app_theme.dart';
+import '../models/cart_item.dart';
 import '../models/review.dart';
 import '../models/tour.dart';
 import '../state/app_state.dart';
+import '../state/cart_provider.dart';
 import '../widgets/avatar_circle.dart';
 import '../widgets/booking_bar.dart';
 import '../widgets/cover_header.dart';
@@ -71,7 +74,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
   }
 
   void _addToCart() {
-    AppScope.of(context).addToCart(
+    // `read`: this is a callback, it needs the cart to write to it, not a
+    // subscription. The button above rebuilds through `watch` in [build].
+    context.read<CartProvider>().add(
       CartItem(tourId: _tour.id, guests: _guests, date: _selectedDate),
     );
     ScaffoldMessenger.of(context)
@@ -82,9 +87,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
           action: SnackBarAction(
             label: 'View cart',
             textColor: Colors.white,
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const CartScreen()),
-            ),
+            onPressed: () => Navigator.of(
+              context,
+            ).push(MaterialPageRoute<void>(builder: (_) => const CartScreen())),
           ),
         ),
       );
@@ -100,7 +105,11 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
   Widget build(BuildContext context) {
     final AppState app = AppScope.of(context);
     final bool isSaved = app.isSaved(_tour.id);
-    final bool inCart = app.isInCart(_tour.id);
+    // One boolean out of the cart: the bar says "Add to cart" or "Update cart"
+    // and follows a removal made on the cart screen.
+    final bool inCart = context.select<CartProvider, bool>(
+      (CartProvider cart) => cart.contains(_tour.id),
+    );
 
     return Scaffold(
       // Because this screen was pushed onto the navigator, the AppBar adds a
@@ -121,9 +130,7 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
         total: _tour.totalFor(_guests),
         caption: 'for $_guests · $_selectedDate',
         label: inCart ? 'Update cart' : 'Add to cart',
-        icon: inCart
-            ? Icons.check_rounded
-            : Icons.add_shopping_cart_rounded,
+        icon: inCart ? Icons.check_rounded : Icons.add_shopping_cart_rounded,
         onPressed: _addToCart,
       ),
     );
@@ -136,7 +143,10 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
     BoxConstraints constraints,
     bool isSaved,
   ) {
-    final double coverHeight = (constraints.maxHeight * 0.36).clamp(200.0, 340.0);
+    final double coverHeight = (constraints.maxHeight * 0.36).clamp(
+      200.0,
+      340.0,
+    );
 
     return SingleChildScrollView(
       child: Column(
@@ -195,7 +205,10 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                         tour: _tour,
                         isSaved: isSaved,
                         onToggleSaved: _toggleSaved,
-                        height: (constraints.maxHeight * 0.5).clamp(260.0, 420.0),
+                        height: (constraints.maxHeight * 0.5).clamp(
+                          260.0,
+                          420.0,
+                        ),
                         borderRadius: AppRadius.cardAll,
                         onShare: () =>
                             _showMessage('Sharing is coming in Milestone 2'),

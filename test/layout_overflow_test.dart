@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
 import 'package:localeyes/data/mock_tours.dart';
 import 'package:localeyes/main.dart';
 import 'package:localeyes/models/tour.dart';
+import 'package:localeyes/screens/profile_screen.dart';
 import 'package:localeyes/screens/tour_detail_screen.dart';
 import 'package:localeyes/state/app_state.dart';
+import 'package:localeyes/state/cart_provider.dart';
 import 'package:localeyes/widgets/tour_card.dart';
 
 /// Screen sizes we promise to support: from a small iPhone SE to a desktop window.
@@ -18,45 +21,82 @@ const List<Size> _sizes = <Size>[
   Size(1280, 800), // tablet landscape / desktop window
 ];
 
-/// The app opens on the Locals tab, so anything about tours starts by
-/// switching to Explore.
-Future<void> _openExplore(WidgetTester tester) async {
-  await tester.tap(find.text('Explore'));
-  await tester.pumpAndSettle();
-}
-
 Future<void> _setSize(WidgetTester tester, Size size) async {
   tester.view.devicePixelRatio = 1.0;
   tester.view.physicalSize = size;
   addTearDown(tester.view.reset);
 }
 
+/// One detail screen with the two things it reads from above it: the saved
+/// tours (AppScope) and the cart (ChangeNotifierProvider), exactly as
+/// `main.dart` stacks them.
+Widget _detail(Tour tour) => ChangeNotifierProvider<CartProvider>(
+  create: (BuildContext context) => CartProvider(),
+  child: AppScope(
+    notifier: AppState(),
+    child: MaterialApp(home: TourDetailScreen(tour: tour)),
+  ),
+);
+
+/// Taps a tab by its label.
+///
+/// Scoped to the bar on purpose: "Profile" and "Map" also appear as titles
+/// on the screens themselves, so a bare [find.text] matches two widgets.
+Future<void> _openTab(WidgetTester tester, String label) async {
+  await tester.tap(
+    find.descendant(
+      of: find.byType(BottomNavigationBar),
+      matching: find.text(label),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
+
+/// Opens the saved list the way a traveller does now: the profile tab, then
+/// the "Saved tours" row. It used to be a tab of its own.
+Future<void> _openSaved(WidgetTester tester) async {
+  await _openTab(tester, 'Profile');
+  // The profile is a lazy ListView, so on a short screen the row is not
+  // built yet. Scroll the profile's own scrollable, not whichever one the
+  // other tabs happen to have left in the IndexedStack.
+  await tester.scrollUntilVisible(
+    find.text('Saved tours'),
+    120,
+    scrollable: find
+        .descendant(
+          of: find.byType(ProfileScreen),
+          matching: find.byType(Scrollable),
+        )
+        .first,
+  );
+  await tester.tap(find.text('Saved tours'));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   group('No RenderFlex overflow', () {
     for (final Size size in _sizes) {
-      testWidgets('home, saved and profile at ${size.width}x${size.height}', (
-        WidgetTester tester,
-      ) async {
-        await _setSize(tester, size);
-        await tester.pumpWidget(const LocalEyesApp());
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
+      testWidgets(
+        'home, map, profile and saved at ${size.width}x${size.height}',
+        (WidgetTester tester) async {
+          await _setSize(tester, size);
+          await tester.pumpWidget(const LocalEyesApp());
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull);
 
-        // Explore tab.
-        await tester.tap(find.text('Explore'));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
+          // Map tab.
+          await _openTab(tester, 'Map');
+          expect(tester.takeException(), isNull);
 
-        // Saved tab.
-        await tester.tap(find.text('Saved'));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
+          // Profile tab.
+          await _openTab(tester, 'Profile');
+          expect(tester.takeException(), isNull);
 
-        // Profile tab.
-        await tester.tap(find.text('Profile'));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull);
-      });
+          // Saved tours now open from the profile instead of a tab.
+          await _openSaved(tester);
+          expect(tester.takeException(), isNull);
+        },
+      );
 
       testWidgets('every tour detail at ${size.width}x${size.height}', (
         WidgetTester tester,
@@ -64,12 +104,7 @@ void main() {
         await _setSize(tester, size);
 
         for (final Tour tour in MockData.tours) {
-          await tester.pumpWidget(
-            AppScope(
-              notifier: AppState(),
-              child: MaterialApp(home: TourDetailScreen(tour: tour)),
-            ),
-          );
+          await tester.pumpWidget(_detail(tour));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: tour.title);
 
@@ -80,7 +115,11 @@ void main() {
             await tester.pumpAndSettle();
             await tester.tap(tabFinder);
             await tester.pumpAndSettle();
-            expect(tester.takeException(), isNull, reason: '$tab · ${tour.title}');
+            expect(
+              tester.takeException(),
+              isNull,
+              reason: '$tab · ${tour.title}',
+            );
           }
 
           // Scroll the whole page: an overflow below the fold still counts.
@@ -90,14 +129,18 @@ void main() {
             const Offset(0, -220),
           );
           await tester.pumpAndSettle();
-          expect(tester.takeException(), isNull, reason: 'bottom · ${tour.title}');
+          expect(
+            tester.takeException(),
+            isNull,
+            reason: 'bottom · ${tour.title}',
+          );
         }
       });
     }
   });
 
   group('Interactivity', () {
-    testWidgets('bookmark badge saves a tour and the saved tab shows it', (
+    testWidgets('bookmark badge saves a tour and the saved list shows it', (
       WidgetTester tester,
     ) async {
       await _setSize(tester, const Size(390, 844));
@@ -105,8 +148,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // One tour is bookmarked in the demo data.
-      await tester.tap(find.text('Saved'));
-      await tester.pumpAndSettle();
+      await _openSaved(tester);
       expect(find.byType(TourCard), findsOneWidget);
 
       // Un-save it from the saved screen.
@@ -122,12 +164,7 @@ void main() {
       await _setSize(tester, const Size(390, 844));
       final Tour tour = MockData.tours.first;
 
-      await tester.pumpWidget(
-        AppScope(
-          notifier: AppState(),
-          child: MaterialApp(home: TourDetailScreen(tour: tour)),
-        ),
-      );
+      await tester.pumpWidget(_detail(tour));
       await tester.pumpAndSettle();
 
       // Default is 2 travellers.
@@ -152,7 +189,6 @@ void main() {
       await _setSize(tester, const Size(390, 844));
       await tester.pumpWidget(const LocalEyesApp());
       await tester.pumpAndSettle();
-      await _openExplore(tester);
 
       await tester.tap(find.byType(TourCard).first);
       await tester.pumpAndSettle();
@@ -175,7 +211,6 @@ void main() {
       await _setSize(tester, const Size(390, 844));
       await tester.pumpWidget(const LocalEyesApp());
       await tester.pumpAndSettle();
-      await _openExplore(tester);
 
       expect(find.byType(TourDetailScreen), findsNothing);
 
@@ -204,7 +239,6 @@ void main() {
       for (final String how in <String>['appbar', 'body']) {
         await tester.pumpWidget(const LocalEyesApp());
         await tester.pumpAndSettle();
-        await _openExplore(tester);
 
         await tester.tap(find.byType(TourCard).first);
         await tester.pumpAndSettle();
@@ -233,7 +267,6 @@ void main() {
       await _setSize(tester, const Size(390, 844));
       await tester.pumpWidget(const LocalEyesApp());
       await tester.pumpAndSettle();
-      await _openExplore(tester);
 
       // Type a search, open a tour, come back: the text is still there.
       await tester.enterText(find.byType(TextField).first, 'canyon');

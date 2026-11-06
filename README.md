@@ -48,6 +48,13 @@ guide **fill empty dates with clients they can trust**.
 5. **Cart** — what was added from the detail screen, with the booking request.
 6. **Register** — account creation with full form validation, a terms
    checkbox and a role dropdown (reached from Profile).
+7. **Locals** — the people who live here, with availability filters, their
+   profiles and a meetup request form.
+8. **Catalog** — the same items as a lazy list or a 2-column grid, with
+   pull-to-refresh, swipe-to-delete, undo and an empty state (reached from the
+   grid button in the Explore app bar).
+9. **Cart** — what the badge counts: every added tour, a delete button on each
+   row, the total, and "Clear All".
 
 ## Interactive features (StatefulWidget + setState)
 
@@ -62,18 +69,22 @@ guide **fill empty dates with clients they can trust**.
 | Date picker chips | `lib/screens/tour_detail_screen.dart` |
 | Bottom navigation | `lib/screens/home_shell.dart` |
 | Registration form: live validation, password visibility, terms checkbox, role dropdown | `lib/screens/register_screen.dart` |
+| Catalog list / grid toggle, pull-to-refresh, swipe-to-delete with undo | `lib/screens/catalog_screen.dart` |
+| Global cart: add-to-cart toggles, live app-bar badge, total, Clear All | `lib/state/cart_provider.dart` |
 
-Saved tours and the cart live in one `ChangeNotifier` (`lib/state/app_state.dart`)
-shared through an `InheritedNotifier`, so the bookmark reacts the same way on
-every screen. No state-management package is used in Milestone 1 — this is the
-place where BLoC will go in Milestone 3.
+Saved tours and saved locals live in one `ChangeNotifier`
+(`lib/state/app_state.dart`) shared through an `InheritedNotifier`, so the
+bookmark reacts the same way on every screen. The cart is a second
+`ChangeNotifier` (`lib/state/cart_provider.dart`), wired with the `provider`
+package — see [The global cart](#the-global-cart-changenotifier--provider).
+BLoC replaces both in Milestone 3.
 
 ## Navigation
 
 The app has one root screen with a `BottomNavigationBar` and pushes a detail
 screen on top of it.
 
-### Root screen — three tabs
+### Root screen — four tabs
 
 `lib/screens/home_shell.dart` holds the selected tab index in a
 `StatefulWidget` and swaps the body with `setState`:
@@ -83,8 +94,9 @@ screen on top of it.
 | 1 · Explore (feed) | `discovery_screen.dart` | 7 tours as cards with a photo, title, category and price per person |
 | 2 · Saved (favourites) | `saved_screen.dart` | the tours the bookmark badge collected |
 | 3 · Profile | `profile_screen.dart` | the traveller's profile, interests and settings |
+| 4 · Locals | `locals_screen.dart` | the people who live here and are up for meeting |
 
-The three tabs sit inside an `IndexedStack`, so they are built once and kept
+The four tabs sit inside an `IndexedStack`, so they are built once and kept
 alive. Switching tabs — or coming back from the detail screen — does **not**
 rebuild them: the search text, the category chip and the scroll position are
 exactly where they were left.
@@ -142,6 +154,83 @@ is already visible when the screen pops.
 `TourDetailScreen` carrying the right tour data, that both back buttons pop it,
 and that a search typed before opening a tour is still in the field afterwards.
 
+## Dynamic lists, grids and touch gestures
+
+The catalog screen (`lib/screens/catalog_screen.dart`) shows the same data two
+ways and answers to three gestures.
+
+| Piece | How it is built |
+| --- | --- |
+| **List feed** | `ListView.separated` — avatar icon, title, category tag, star rating and price per row, with a 1 px `Divider` from `separatorBuilder` |
+| **Grid catalog** | `GridView.builder`, `crossAxisCount: 2`, `childAspectRatio: 0.72` |
+| **Toggle** | an `IconButton` in the `AppBar` that flips `CatalogView` with `setState` |
+| **Pull-to-refresh** | `RefreshIndicator` → `await Future.delayed(1500 ms)` → `_items.insert(0, …)` |
+| **Swipe-to-delete** | `Dismissible` with `key: ValueKey(item.id)`, `endToStart`, red background with `Icons.delete` — in **both** the list and the grid |
+| **Undo** | a floating `SnackBar` whose action does `_items.insert(index, item)`, so the item lands back on its old row, not on top |
+| **Empty state** | `EmptyState` with "Catalog is Empty" and a "Reset Catalog" button that re-seeds the data |
+
+Both builders are lazy on purpose. A `Column` inside a `SingleChildScrollView`
+builds every row up front and keeps them all in memory; `ListView.separated`
+and `GridView.builder` only build what is on screen plus a small cache, which
+is what keeps a long catalog cheap on a phone.
+
+The `ValueKey` is built from the item **id**, never from the index: with an
+index key Flutter would animate away the wrong row once the list shifted after
+a removal.
+
+Both lists use `AlwaysScrollableScrollPhysics` and the empty state is itself a
+`ListView`, so pull-to-refresh still works when the catalog is short or empty.
+
+`test/catalog_test.dart` covers all of it: the divider and the grid delegate,
+the 1500 ms refresh landing at index 0, a swipe in each view, the undo coming
+back at the original position, and the empty state with its reset.
+
+## The global cart (ChangeNotifier + Provider)
+
+Two screens, one cart. `CartProvider` (`lib/state/cart_provider.dart`) is a
+`ChangeNotifier` that owns the whole truth about what has been added; no screen
+keeps a copy, so there is nothing to keep in sync by hand.
+
+```dart
+// lib/main.dart — above MaterialApp, so every pushed route sees the same cart
+return ChangeNotifierProvider<CartProvider>(
+  create: (BuildContext context) => CartProvider(),
+  child: AppScope(
+    notifier: _appState,
+    child: MaterialApp(home: const HomeShell()),
+  ),
+);
+```
+
+| Piece | How it is built |
+| --- | --- |
+| **The cart itself** | `Map<String, CartItem>` keyed by tour id — a tour cannot be added twice, and a `Map` keeps insertion order, so the cart lists tours in the order they were added |
+| **Screen 1 · the feed** | every card carries an Add to cart / In cart toggle; the button's state is read from the provider, never from a local `bool` |
+| **Live badge** | `CartBadgeButton` calls `context.watch<CartProvider>()`, so only the button rebuilds when the count changes |
+| **Screen 2 · the cart** | every added tour with its own delete button, the total in the booking bar, and "Clear All" with an UNDO SnackBar |
+| **Total** | `CartProvider.total` folds price × travellers — the screen displays a number it never calculates |
+| **Two ways in** | the toggle on a card adds one traveller on the first free date; the detail screen adds the same tour with a chosen date and group size, and the toggle then reads "In cart" |
+
+Three different ways of reading the provider, each picked for a reason:
+
+* `context.watch<CartProvider>()` — the cart screen and the badge depend on the
+  whole object, so they subscribe to it.
+* `context.select<CartProvider, bool>((c) => c.contains(tour.id))` — a card
+  only cares whether **its** tour is in the cart, so it rebuilds when that one
+  boolean flips and sits still when another card changes.
+* `context.read<CartProvider>()` — inside button callbacks, where the object is
+  needed to call a method on and a subscription would be pure waste.
+
+Because every screen reads the same object, deleting a tour on the cart screen
+has already flipped its card back to "Add to cart" and dropped the badge by one
+before the back arrow is pressed. `test/cart_provider_test.dart` proves exactly
+that: it adds two tours from the feed, opens the cart, deletes one, walks back,
+and checks the badge and the button states — and does the same round trip
+through the detail screen.
+
+The booking cart is the only state that moved: saved tours, saved locals and
+meetup requests still live in `AppState` behind the `InheritedNotifier`.
+
 ## Layout and responsiveness
 
 * `Stack` — cover photo, gradients, share button and the bookmark badge
@@ -163,11 +252,14 @@ and **every** tour detail screen (including all three tabs and the bottom of the
 page) at six screen sizes, from 320×568 to 1280×800, and fails if Flutter
 reports any overflow. `test/register_form_test.dart` does the same for the
 registration screen at four sizes, with every field in its error state — the
-tallest the form can get.
+tallest the form can get. `test/locals_layout_test.dart` covers the locals
+screens, `test/catalog_test.dart` checks both catalog views at 320×568,
+390×844 and 768×1024 including the grid after a scroll, and
+`test/cart_provider_test.dart` does the same for the feed with a full cart.
 
 ```
 flutter test
-# 35 tests passed
+# 92 tests passed
 flutter analyze
 # No issues found
 ```
@@ -183,15 +275,21 @@ See `design/README.md`.
 ```
 lib/
 ├── core/          app_theme.dart — colours, spacing, text styles
-├── models/        guide.dart, review.dart, tour.dart
-├── data/          mock_tours.dart — demo data, replaced by a REST API later
-├── state/         app_state.dart — saved tours and cart, shared via AppScope
+├── models/        guide.dart, review.dart, tour.dart, local_person.dart,
+│                  spot.dart, catalog_item.dart, cart_item.dart
+├── data/          mock_tours.dart, mock_locals.dart, catalog_seed.dart —
+│                  demo data, replaced by a REST API later
+├── state/         app_state.dart — saved tours and locals (AppScope)
+│                  cart_provider.dart — the cart (ChangeNotifier + provider)
 ├── screens/       home_shell, discovery, tour_detail, saved, cart, profile,
-│                  register
+│                  register, locals, local_profile, meetup_request, spots,
+│                  become_local, catalog
 └── widgets/       tour_card, cover_header, booking_bar, bookmark_badge,
                    tag_chip, rating_stars, fact_tile, guide_strip,
                    quantity_stepper, avatar_circle, section_header,
-                   match_sheet, empty_state
+                   match_sheet, empty_state, local_card, hangout_row,
+                   availability_pill, spot_card, catalog_list_tile,
+                   catalog_grid_card, cart_badge_button, cart_toggle_button
 ```
 
 ```

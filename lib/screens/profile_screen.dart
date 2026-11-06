@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
 import '../state/app_state.dart';
-import 'become_local_screen.dart';
-import 'register_screen.dart';
 import '../widgets/avatar_circle.dart';
 import '../widgets/section_header.dart';
 import '../widgets/tag_chip.dart';
+import 'become_local_screen.dart';
+import 'register_screen.dart';
+import 'saved_screen.dart';
 
 /// Traveller profile. Verification and preferences are what make the
 /// two-sided trust system work for guides as well.
@@ -86,7 +87,10 @@ class ProfileScreen extends StatelessWidget {
                     Row(
                       children: <Widget>[
                         _Stat(value: '6', label: 'Trips'),
-                        _Stat(value: '${app.savedTours.length}', label: 'Saved'),
+                        _Stat(
+                          value: '${app.savedTours.length}',
+                          label: 'Saved',
+                        ),
                         const _Stat(value: '4.9', label: 'As a guest'),
                       ],
                     ),
@@ -94,6 +98,21 @@ class ProfileScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
+              const SectionHeader(title: 'Your lists'),
+              const SizedBox(height: AppSpacing.md),
+              _MenuTile(
+                icon: Icons.bookmark_outline_rounded,
+                title: 'Saved tours',
+                subtitle: app.savedTours.isEmpty
+                    ? 'Nothing saved yet'
+                    : '${app.savedTours.length} waiting for you',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const SavedScreen(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
               const SectionHeader(
                 title: 'What I like',
                 subtitle: 'Guides see this before they accept a booking',
@@ -144,7 +163,8 @@ class ProfileScreen extends StatelessWidget {
               ElevatedButton.icon(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const BecomeLocalScreen(),
+                    builder: (BuildContext context) =>
+                        const BecomeLocalScreen(),
                   ),
                 ),
                 icon: const Icon(Icons.waving_hand_rounded, size: 19),
@@ -199,18 +219,21 @@ class _MenuTile extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.onTap,
   });
 
   final IconData icon;
   final String title;
   final String subtitle;
 
+  /// Set on the tiles that lead somewhere. The rest are read-only rows.
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
     final TextTheme text = Theme.of(context).textTheme;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+    final Widget body = Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -250,12 +273,20 @@ class _MenuTile extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.inkMuted,
-          ),
+          const Icon(Icons.chevron_right_rounded, color: AppColors.inkMuted),
         ],
       ),
+    );
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: onTap == null
+          ? body
+          : InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(16),
+              child: body,
+            ),
     );
   }
 }

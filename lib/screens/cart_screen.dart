@@ -1,29 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/app_theme.dart';
-import '../state/app_state.dart';
+import '../models/cart_item.dart';
+import '../state/cart_provider.dart';
 import '../widgets/booking_bar.dart';
 import '../widgets/empty_state.dart';
 
-/// Everything the traveller added from the detail screen.
+/// Screen 2 of the cart: everything that was added, a delete button on every
+/// row, the total, and "Clear All".
+///
+/// Nothing here is copied into local state. The screen reads [CartProvider]
+/// and writes back to it, so a change made here is already true on the feed
+/// behind it — the badge and the "Add to cart" buttons follow without being
+/// told.
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final AppState app = AppScope.of(context);
-    final List<CartItem> items = app.cart;
+    // `watch`: the whole screen depends on the cart, so there is nothing to
+    // gain from a narrower subscription.
+    final CartProvider cart = context.watch<CartProvider>();
+    final List<CartItem> items = cart.items;
     final TextTheme text = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Your cart')),
-      body: items.isEmpty
+      appBar: AppBar(
+        title: const Text('Your cart'),
+        actions: <Widget>[
+          // Only offered when there is something to clear.
+          if (!cart.isEmpty)
+            TextButton(
+              onPressed: () => _clearAll(context, cart),
+              child: const Text('Clear All'),
+            ),
+          const SizedBox(width: AppSpacing.sm),
+        ],
+      ),
+      body: cart.isEmpty
           ? EmptyState(
               icon: Icons.shopping_bag_outlined,
               title: 'Your cart is empty',
               message:
-                  'Open a tour, choose a date and the number of travellers, '
-                  'then add it here.',
+                  'Add a tour straight from the feed, or open one to choose '
+                  'the date and the number of travellers first.',
               actionLabel: 'Back to tours',
               onAction: () => Navigator.of(context).maybePop(),
             )
@@ -88,11 +109,16 @@ class CartScreen extends StatelessWidget {
                             ),
                           ),
                           IconButton(
+                            tooltip: 'Remove ${item.tour.title}',
                             icon: const Icon(
                               Icons.delete_outline_rounded,
                               color: AppColors.inkMuted,
                             ),
-                            onPressed: () => app.removeFromCart(item.tourId),
+                            // `read`: a callback needs the object, not a
+                            // subscription — this screen already watches.
+                            onPressed: () => context
+                                .read<CartProvider>()
+                                .remove(item.tourId),
                           ),
                         ],
                       ),
@@ -101,16 +127,19 @@ class CartScreen extends StatelessWidget {
                 ),
               ),
             ),
-      bottomNavigationBar: items.isEmpty
+      bottomNavigationBar: cart.isEmpty
           ? null
           : BookingBar(
-              total: app.cartTotal,
-              caption: '${items.length} '
+              // The total comes from the provider: the screen shows a number
+              // it never calculates itself.
+              total: cart.total,
+              caption:
+                  '${items.length} '
                   '${items.length == 1 ? "tour" : "tours"} · deposit 20%',
               label: 'Request to book',
               icon: Icons.lock_outline_rounded,
               onPressed: () {
-                app.clearCart();
+                cart.clear();
                 ScaffoldMessenger.of(context)
                   ..hideCurrentSnackBar()
                   ..showSnackBar(
@@ -124,5 +153,32 @@ class CartScreen extends StatelessWidget {
               },
             ),
     );
+  }
+
+  /// Empties the cart and offers one undo, so a mis-tap on "Clear All" does
+  /// not cost the whole cart.
+  void _clearAll(BuildContext context, CartProvider cart) {
+    final List<CartItem> removed = cart.items;
+    cart.clear();
+
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(
+            '${removed.length} '
+            '${removed.length == 1 ? "tour" : "tours"} removed',
+          ),
+          action: SnackBarAction(
+            label: 'UNDO',
+            textColor: Colors.white,
+            onPressed: () {
+              for (final CartItem item in removed) {
+                cart.add(item);
+              }
+            },
+          ),
+        ),
+      );
   }
 }

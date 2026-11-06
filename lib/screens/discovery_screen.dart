@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 import '../core/app_theme.dart';
 import '../data/mock_tours.dart';
 import '../models/tour.dart';
 import '../state/app_state.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/cart_badge_button.dart';
 import '../widgets/match_sheet.dart';
 import '../widgets/section_header.dart';
 import '../widgets/tour_card.dart';
 import 'cart_screen.dart';
+import 'catalog_screen.dart';
 import 'tour_detail_screen.dart';
 
 /// Main discovery feed: search, categories, the matching card and the tour grid.
@@ -34,8 +37,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
 
   List<Tour> get _results {
     return MockData.tours.where((Tour tour) {
-      final bool byCategory =
-          _category == 'All' || tour.category == _category;
+      final bool byCategory = _category == 'All' || tour.category == _category;
       final bool byQuery =
           _query.isEmpty ||
           tour.title.toLowerCase().contains(_query) ||
@@ -116,12 +118,16 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   ),
                   sliver: SliverToBoxAdapter(
                     child: SectionHeader(
-                      title: _match.isEmpty ? 'Tours near Almaty' : 'Your matches',
+                      title: _match.isEmpty
+                          ? 'Tours near Almaty'
+                          : 'Your matches',
                       subtitle:
                           '${results.length} ${results.length == 1 ? "tour" : "tours"} '
                           'from verified local guides',
                       actionLabel:
-                          (_match.isEmpty && _category == 'All' && _query.isEmpty)
+                          (_match.isEmpty &&
+                              _category == 'All' &&
+                              _query.isEmpty)
                           ? null
                           : 'Reset',
                       onAction: _clearFilters,
@@ -142,35 +148,39 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                     ),
                   )
                 else
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(
-                      AppSpacing.lg,
-                      0,
-                      AppSpacing.lg,
-                      AppSpacing.xl,
-                    ),
-                    sliver: SliverGrid(
-                      // One column on a phone, two or three on a tablet.
-                      gridDelegate:
-                          const SliverGridDelegateWithMaxCrossAxisExtent(
-                            maxCrossAxisExtent: 420,
-                            mainAxisExtent: 326,
-                            crossAxisSpacing: AppSpacing.lg,
-                            mainAxisSpacing: AppSpacing.lg,
+                  SliverLayoutBuilder(
+                    builder:
+                        (
+                          BuildContext context,
+                          SliverConstraints constraints,
+                        ) => SliverPadding(
+                          padding: const EdgeInsets.fromLTRB(
+                            AppSpacing.lg,
+                            0,
+                            AppSpacing.lg,
+                            AppSpacing.xl,
                           ),
-                      delegate: SliverChildBuilderDelegate(
-                        (BuildContext context, int index) {
-                          final Tour tour = results[index];
-                          return TourCard(
-                            tour: tour,
-                            isSaved: app.isSaved(tour.id),
-                            onToggleSaved: () => app.toggleSaved(tour.id),
-                            onTap: () => _openTour(tour),
-                          );
-                        },
-                        childCount: results.length,
-                      ),
-                    ),
+                          sliver: SliverGrid(
+                            // One column on a phone, two or three on a tablet. The
+                            // card itself decides how tall it has to be at that
+                            // column width.
+                            gridDelegate: TourCard.gridDelegate(
+                              constraints.crossAxisExtent - AppSpacing.lg * 2,
+                            ),
+                            delegate: SliverChildBuilderDelegate((
+                              BuildContext context,
+                              int index,
+                            ) {
+                              final Tour tour = results[index];
+                              return TourCard(
+                                tour: tour,
+                                isSaved: app.isSaved(tour.id),
+                                onToggleSaved: () => app.toggleSaved(tour.id),
+                                onTap: () => _openTour(tour),
+                              );
+                            }, childCount: results.length),
+                          ),
+                        ),
                   ),
               ],
             ),
@@ -229,8 +239,18 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              _CartButton(
-                count: app.cartCount,
+              // Opens the catalog screen (list / grid, swipe to delete).
+              IconButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const CatalogScreen(),
+                  ),
+                ),
+                tooltip: 'Catalog',
+                icon: const Icon(Icons.grid_view_rounded),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              CartBadgeButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) => const CartScreen(),
@@ -263,13 +283,13 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               filled: true,
               fillColor: Colors.white,
               contentPadding: const EdgeInsets.symmetric(vertical: 14),
-              border: OutlineInputBorder(
+              border: const OutlineInputBorder(
                 borderRadius: AppRadius.pillAll,
-                borderSide: const BorderSide(color: AppColors.line),
+                borderSide: BorderSide.none,
               ),
-              enabledBorder: OutlineInputBorder(
+              enabledBorder: const OutlineInputBorder(
                 borderRadius: AppRadius.pillAll,
-                borderSide: const BorderSide(color: AppColors.line),
+                borderSide: BorderSide.none,
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: AppRadius.pillAll,
@@ -304,18 +324,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               decoration: BoxDecoration(
-                color: selected ? AppColors.brand : Colors.white,
+                color: selected ? AppColors.brand : Colors.transparent,
                 borderRadius: AppRadius.pillAll,
-                border: Border.all(
-                  color: selected ? AppColors.brand : AppColors.line,
-                ),
               ),
               child: Text(
                 category,
                 style: TextStyle(
                   fontSize: 13.5,
-                  fontWeight: FontWeight.w600,
-                  color: selected ? Colors.white : AppColors.ink,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                  color: selected ? Colors.white : AppColors.inkMuted,
                 ),
               ),
             ),
@@ -336,12 +353,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: const BoxDecoration(
+          color: Colors.white,
           borderRadius: AppRadius.cardAll,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: <Color>[AppColors.brand, AppColors.brandDeep],
-          ),
         ),
         child: Row(
           children: <Widget>[
@@ -350,99 +363,38 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  const Text(
+                  Text(
                     'Not sure who to pick?',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16.5,
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium,
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Answer three questions and we show the guides that '
                     'fit your pace and language.',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.86),
-                      fontSize: 13,
-                      height: 1.35,
-                    ),
+                    style: Theme.of(context).textTheme.bodySmall,
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  ElevatedButton(
+                  const SizedBox(height: AppSpacing.sm),
+                  // A text button, not a filled one. This is an offer, not
+                  // the thing the screen is for, and the tour cards below
+                  // should stay the loudest part of the feed.
+                  TextButton(
                     onPressed: _openMatchSheet,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: AppColors.brandDeep,
-                      minimumSize: const Size(0, 42),
+                    style: TextButton.styleFrom(
+                      foregroundColor: AppColors.brand,
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      textStyle: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                    child: const Text('Match me'),
+                    child: const Text('Match me  →'),
                   ),
                 ],
               ),
             ),
-            const SizedBox(width: AppSpacing.md),
-            Icon(
-              Icons.auto_awesome_rounded,
-              size: 42,
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CartButton extends StatelessWidget {
-  const _CartButton({required this.count, required this.onPressed});
-
-  final int count;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onPressed,
-        child: SizedBox(
-          width: 46,
-          height: 46,
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              const Icon(
-                Icons.shopping_bag_outlined,
-                size: 22,
-                color: AppColors.ink,
-              ),
-              if (count > 0)
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    width: 16,
-                    height: 16,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(
-                      color: AppColors.brand,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Text(
-                      '$count',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                ),
-            ],
-          ),
         ),
       ),
     );

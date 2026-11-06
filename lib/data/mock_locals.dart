@@ -276,6 +276,8 @@ class MockLocals {
   static const List<Spot> spots = <Spot>[
     Spot(
       id: 's1',
+      lat: 43.2628,
+      lng: 76.9459,
       name: 'Green Bazaar, upstairs',
       area: 'Almaly',
       kind: 'Bazaar',
@@ -290,6 +292,8 @@ class MockLocals {
     ),
     Spot(
       id: 's2',
+      lat: 43.2399,
+      lng: 76.9152,
       name: 'The mosaic bus stops on Abai',
       area: 'Bostandyk',
       kind: 'Architecture',
@@ -303,6 +307,8 @@ class MockLocals {
     ),
     Spot(
       id: 's3',
+      lat: 43.2648,
+      lng: 76.943,
       name: 'Canteen on Zhibek Zholy',
       area: 'Almaly',
       kind: 'Canteen',
@@ -316,6 +322,8 @@ class MockLocals {
     ),
     Spot(
       id: 's4',
+      lat: 43.2585,
+      lng: 76.954,
       name: 'The courtyard behind Panfilov',
       area: 'Almaly',
       kind: 'Courtyard',
@@ -329,6 +337,8 @@ class MockLocals {
     ),
     Spot(
       id: 's5',
+      lat: 43.188,
+      lng: 77.054,
       name: 'Butakovka, the lower trail',
       area: 'Medeu',
       kind: 'Trail',
@@ -342,6 +352,8 @@ class MockLocals {
     ),
     Spot(
       id: 's6',
+      lat: 43.329,
+      lng: 76.839,
       name: 'Book market at Baraholka',
       area: 'Zhetysu',
       kind: 'Market',
@@ -355,6 +367,8 @@ class MockLocals {
     ),
     Spot(
       id: 's7',
+      lat: 43.157,
+      lng: 77.058,
       name: 'The dam steps at Medeu',
       area: 'Medeu',
       kind: 'Viewpoint',
@@ -368,6 +382,8 @@ class MockLocals {
     ),
     Spot(
       id: 's8',
+      lat: 43.2205,
+      lng: 76.858,
       name: 'Mural wall, 11th microdistrict',
       area: 'Auezov',
       kind: 'Street art',

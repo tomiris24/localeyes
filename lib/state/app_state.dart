@@ -5,18 +5,6 @@ import '../data/mock_tours.dart';
 import '../models/local_person.dart';
 import '../models/tour.dart';
 
-/// One tour added to the cart, together with the options the traveller picked.
-class CartItem {
-  CartItem({required this.tourId, required this.guests, required this.date});
-
-  final String tourId;
-  final int guests;
-  final String date;
-
-  Tour get tour => MockData.byId(tourId);
-  double get total => tour.totalFor(guests);
-}
-
 /// Where a meetup request stands. A local is a person with a job, not a
 /// business, so "declined" is a normal outcome and the UI says so plainly.
 enum MeetupStatus { waiting, accepted, declined }
@@ -52,13 +40,17 @@ class MeetupRequest {
   LocalPerson get local => MockLocals.byId(localId);
 }
 
-/// App-wide state shared by every screen: saved tours and the cart.
+/// App-wide state shared by every screen: saved tours, saved locals and
+/// meetup requests.
 ///
-/// It is a plain [ChangeNotifier] on purpose — no extra packages in Milestone 1.
-/// In Milestone 3 this is replaced by BLoC.
+/// The cart is deliberately not here — it lives in `CartProvider` and reaches
+/// the tree through `ChangeNotifierProvider`, so there is exactly one object
+/// that knows what has been added.
+///
+/// This one is a plain [ChangeNotifier] behind an [InheritedNotifier].
+/// In Milestone 3 both are replaced by BLoC.
 class AppState extends ChangeNotifier {
   final Set<String> _savedIds = <String>{'t3'};
-  final List<CartItem> _cart = <CartItem>[];
   final Set<String> _savedLocalIds = <String>{'l3'};
   final List<MeetupRequest> _meetups = <MeetupRequest>[];
 
@@ -71,11 +63,6 @@ class AppState extends ChangeNotifier {
   };
 
   Set<String> get savedIds => Set<String>.unmodifiable(_savedIds);
-  List<CartItem> get cart => List<CartItem>.unmodifiable(_cart);
-
-  int get cartCount => _cart.length;
-  double get cartTotal =>
-      _cart.fold(0, (double sum, CartItem item) => sum + item.total);
 
   List<Tour> get savedTours =>
       MockData.tours.where((Tour t) => _savedIds.contains(t.id)).toList();
@@ -92,25 +79,6 @@ class AppState extends ChangeNotifier {
     }
     notifyListeners();
     return nowSaved;
-  }
-
-  bool isInCart(String tourId) =>
-      _cart.any((CartItem item) => item.tourId == tourId);
-
-  void addToCart(CartItem item) {
-    _cart.removeWhere((CartItem existing) => existing.tourId == item.tourId);
-    _cart.add(item);
-    notifyListeners();
-  }
-
-  void removeFromCart(String tourId) {
-    _cart.removeWhere((CartItem item) => item.tourId == tourId);
-    notifyListeners();
-  }
-
-  void clearCart() {
-    _cart.clear();
-    notifyListeners();
   }
 
   // --- Locals -------------------------------------------------------------
@@ -162,11 +130,15 @@ class AppState extends ChangeNotifier {
 
 /// Makes [AppState] available to the whole widget tree without a state package.
 class AppScope extends InheritedNotifier<AppState> {
-  const AppScope({super.key, required AppState super.notifier, required super.child});
+  const AppScope({
+    super.key,
+    required AppState super.notifier,
+    required super.child,
+  });
 
   static AppState of(BuildContext context) {
-    final AppScope? scope =
-        context.dependOnInheritedWidgetOfExactType<AppScope>();
+    final AppScope? scope = context
+        .dependOnInheritedWidgetOfExactType<AppScope>();
     assert(scope != null, 'No AppScope found above this widget');
     return scope!.notifier!;
   }

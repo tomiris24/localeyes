@@ -21,6 +21,13 @@ const List<Size> _sizes = <Size>[
   Size(1280, 800), // tablet landscape / desktop window
 ];
 
+/// Locals is the fourth tab — the app opens on the tour feed, which is what
+/// the assignment asks for — so anything about people switches there first.
+Future<void> _openLocals(WidgetTester tester) async {
+  await tester.tap(find.text('Locals'));
+  await tester.pumpAndSettle();
+}
+
 Future<void> _setSize(WidgetTester tester, Size size) async {
   tester.view.devicePixelRatio = 1.0;
   tester.view.physicalSize = size;
@@ -50,6 +57,7 @@ void main() {
         await _setSize(tester, size);
         await tester.pumpWidget(const LocalEyesApp());
         await tester.pumpAndSettle();
+        await _openLocals(tester);
         expect(tester.takeException(), isNull);
 
         await _scrollToBottom(tester);
@@ -126,6 +134,7 @@ void main() {
       await _setSize(tester, const Size(390, 844));
       await tester.pumpWidget(const LocalEyesApp());
       await tester.pumpAndSettle();
+      await _openLocals(tester);
 
       for (final Availability when in <Availability>[
         Availability.today,
@@ -160,6 +169,7 @@ void main() {
       await _setSize(tester, const Size(390, 844));
       await tester.pumpWidget(const LocalEyesApp());
       await tester.pumpAndSettle();
+      await _openLocals(tester);
 
       expect(find.byType(LocalProfileScreen), findsNothing);
 

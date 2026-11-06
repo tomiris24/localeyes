@@ -12,6 +12,8 @@ class Spot {
     required this.addedById,
     required this.addedByName,
     required this.saveCount,
+    required this.lat,
+    required this.lng,
     this.bestTime = 'Any time',
   });
 
@@ -29,4 +31,8 @@ class Spot {
   final String addedByName;
   final int saveCount;
   final String bestTime;
+
+  /// Where the place is, so the map tab can pin it.
+  final double lat;
+  final double lng;
 }
