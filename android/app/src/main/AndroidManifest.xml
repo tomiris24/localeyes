@@ -1,4 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- The store feed talks to a public REST API, so release builds need this too. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="localeyes"
         android:name="${applicationName}"
