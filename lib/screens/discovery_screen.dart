@@ -11,7 +11,7 @@ import '../widgets/match_sheet.dart';
 import '../widgets/section_header.dart';
 import '../widgets/tour_card.dart';
 import 'cart_screen.dart';
-import 'catalog_screen.dart';
+import 'store_screen.dart';
 import 'tour_detail_screen.dart';
 
 /// Main discovery feed: search, categories, the matching card and the tour grid.
@@ -239,15 +239,15 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              // Opens the catalog screen (list / grid, swipe to delete).
+              // Opens the store feed, which loads its products over the network.
               IconButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const CatalogScreen(),
+                    builder: (BuildContext context) => const StoreScreen(),
                   ),
                 ),
-                tooltip: 'Catalog',
-                icon: const Icon(Icons.grid_view_rounded),
+                tooltip: 'Store',
+                icon: const Icon(Icons.storefront_rounded),
               ),
               const SizedBox(width: AppSpacing.xs),
               CartBadgeButton(
