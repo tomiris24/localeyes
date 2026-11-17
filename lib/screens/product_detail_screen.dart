@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
+import '../data/guide_picks.dart';
 import '../models/product.dart';
+import '../models/tour.dart';
+import '../widgets/gear_category.dart';
 import '../widgets/product_image.dart';
 import '../widgets/product_tile.dart';
+import '../widgets/avatar_circle.dart';
 import '../widgets/share_sheet.dart';
+import 'tour_detail_screen.dart';
 
 /// One framing of the product photo.
 ///
@@ -26,8 +31,8 @@ class _GalleryShot {
   final Color background;
 }
 
-/// The product page: hero image carousel, the full description, and a bottom
-/// bar that stays put while the text scrolls.
+/// One of the guide's picks: hero image carousel, the full description, who
+/// suggested it, and a bottom bar that stays put while the text scrolls.
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key, required this.product});
 
@@ -100,7 +105,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text('Product'),
+        title: const Text('Guide pick'),
         actions: <Widget>[
           IconButton(
             onPressed: () => showProductShareSheet(context, product),
@@ -126,7 +131,11 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    Flexible(child: CategoryBadge(label: product.category)),
+                    Flexible(
+                      child: CategoryBadge(
+                        category: GearCategory.of(product.category),
+                      ),
+                    ),
                     const SizedBox(width: AppSpacing.sm),
                     const Icon(
                       Icons.star_rounded,
@@ -149,6 +158,16 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                 Text('About this item', style: text.titleMedium),
                 const SizedBox(height: AppSpacing.sm),
                 Text(product.description, style: text.bodyLarge),
+                const SizedBox(height: AppSpacing.lg),
+                _GuideNote(
+                  pick: GuidePick.forProduct(product),
+                  onOpenTour: (Tour tour) => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) =>
+                          TourDetailScreen(tour: tour),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.lg),
                 _DeepLinkRow(
                   product: product,
@@ -271,6 +290,67 @@ class _Pill extends StatelessWidget {
           fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
+      ),
+    );
+  }
+}
+
+/// What ties this screen to the rest of the app: a real guide, a real tour,
+/// and one line of advice in their own voice.
+class _GuideNote extends StatelessWidget {
+  const _GuideNote({required this.pick, required this.onOpenTour});
+
+  final GuidePick pick;
+  final void Function(Tour) onOpenTour;
+
+  @override
+  Widget build(BuildContext context) {
+    final TextTheme text = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: const BoxDecoration(
+        color: AppColors.canvas,
+        borderRadius: AppRadius.cardAll,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              AvatarCircle(
+                initials: pick.guide.initials,
+                size: 36,
+                isVerified: pick.guide.isVerified,
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(pick.guide.name, style: text.titleSmall),
+                    Text(
+                      'packs this for the tour below',
+                      style: text.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text('"${pick.note}"', style: text.bodyLarge),
+          const SizedBox(height: AppSpacing.md),
+          OutlinedButton(
+            onPressed: () => onOpenTour(pick.tour),
+            child: Text(
+              pick.tour.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
       ),
     );
   }

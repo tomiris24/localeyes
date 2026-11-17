@@ -23,11 +23,7 @@ class AvatarCircle extends StatelessWidget {
       alignment: Alignment.center,
       decoration: const BoxDecoration(
         shape: BoxShape.circle,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: <Color>[AppColors.brand, AppColors.brandDeep],
-        ),
+        color: AppColors.brand,
       ),
       child: Text(
         initials,

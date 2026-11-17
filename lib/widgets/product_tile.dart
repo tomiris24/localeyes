@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
+import '../data/guide_picks.dart';
 import '../models/product.dart';
+import 'avatar_circle.dart';
+import 'gear_category.dart';
 import 'product_image.dart';
 
-/// One row of the store feed: thumbnail, title, category, rating and price.
+/// One row of the feed: thumbnail, title, kind of kit, rating, price — and the
+/// guide who suggested it, which is the only reason it is in a tours app.
 class ProductTile extends StatelessWidget {
   const ProductTile({super.key, required this.product, required this.onTap});
 
@@ -14,6 +18,7 @@ class ProductTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextTheme text = Theme.of(context).textTheme;
+    final GuidePick pick = GuidePick.forProduct(product);
 
     return InkWell(
       onTap: onTap,
@@ -63,7 +68,11 @@ class ProductTile extends StatelessWidget {
                     children: <Widget>[
                       // Flexible + ellipsis: a long category shrinks instead
                       // of overflowing on a narrow phone.
-                      Flexible(child: CategoryBadge(label: product.category)),
+                      Flexible(
+                        child: CategoryBadge(
+                          category: GearCategory.of(product.category),
+                        ),
+                      ),
                       const SizedBox(width: AppSpacing.sm),
                       const Icon(
                         Icons.star_rounded,
@@ -74,6 +83,21 @@ class ProductTile extends StatelessWidget {
                       Text(product.ratingLabel, style: text.bodySmall),
                       const SizedBox(width: 4),
                       Text('(${product.reviewCount})', style: text.bodySmall),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: <Widget>[
+                      AvatarCircle(initials: pick.guide.initials, size: 18),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          '${pick.guide.name} · ${pick.tour.title}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: text.bodySmall,
+                        ),
+                      ),
                     ],
                   ),
                 ],
@@ -88,11 +112,11 @@ class ProductTile extends StatelessWidget {
   }
 }
 
-/// The pill that carries the API category (`men's clothing`, `jewelery`, …).
+/// The pill that says what kind of kit this is.
 class CategoryBadge extends StatelessWidget {
-  const CategoryBadge({super.key, required this.label});
+  const CategoryBadge({super.key, required this.category});
 
-  final String label;
+  final GearCategory category;
 
   @override
   Widget build(BuildContext context) {
@@ -102,16 +126,25 @@ class CategoryBadge extends StatelessWidget {
         color: AppColors.canvas,
         borderRadius: AppRadius.pillAll,
       ),
-      child: Text(
-        label.toUpperCase(),
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          fontSize: 10.5,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.4,
-          color: AppColors.brandDeep,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Icon(category.icon, size: 12, color: AppColors.brandDeep),
+          const SizedBox(width: 4),
+          Flexible(
+            child: Text(
+              category.label.toUpperCase(),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.4,
+                color: AppColors.brandDeep,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -70,7 +70,7 @@ class SpotCard extends StatelessWidget {
             padding: const EdgeInsets.only(left: AppSpacing.md),
             decoration: const BoxDecoration(
               border: Border(
-                left: BorderSide(color: AppColors.brandSoft, width: 3),
+                left: BorderSide(color: AppColors.brand, width: 3),
               ),
             ),
             child: Text(

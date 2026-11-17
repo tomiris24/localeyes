@@ -173,7 +173,7 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: AppColors.brandSoft.withValues(alpha: 0.35),
+                    color: AppColors.brandTint,
                     borderRadius: AppRadius.cardAll,
                   ),
                   child: Text(

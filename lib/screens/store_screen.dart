@@ -3,10 +3,15 @@ import 'package:flutter/material.dart';
 import '../core/app_theme.dart';
 import '../data/store_api.dart';
 import '../models/product.dart';
+import '../widgets/empty_state.dart';
+import '../widgets/gear_category.dart';
 import '../widgets/product_tile.dart';
 import 'product_detail_screen.dart';
 
-/// The store feed, fed by a live REST API.
+/// Guide picks: the kit our guides tell travellers to bring on their tours.
+///
+/// The items come from a live REST API; what makes them part of LocalEyes is
+/// the guide and the tour each one is tied to ([GuidePick]).
 ///
 /// It has exactly three states and never shows two of them at once: a spinner
 /// while the first request is in flight, the list once it lands, and an error
@@ -24,6 +29,19 @@ class _StoreScreenState extends State<StoreScreen> {
   List<Product> _products = <Product>[];
   String? _error;
   bool _loading = true;
+
+  /// Null means "All". Filtering happens on what is already downloaded, so
+  /// switching tabs costs nothing and works offline once the feed has landed.
+  GearCategory? _filter;
+
+  List<Product> get _visible => _filter == null
+      ? _products
+      : _products
+            .where(
+              (Product p) =>
+                  GearCategory.of(p.category).label == _filter!.label,
+            )
+            .toList();
 
   @override
   void initState() {
@@ -86,7 +104,7 @@ class _StoreScreenState extends State<StoreScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Store'),
+        title: const Text('Guide picks'),
         actions: <Widget>[
           IconButton(
             onPressed: _loading ? null : () => _load(),
@@ -95,7 +113,21 @@ class _StoreScreenState extends State<StoreScreen> {
           ),
         ],
       ),
-      body: SafeArea(top: false, child: _buildBody(context)),
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: <Widget>[
+            // The filter row only makes sense once there is something to filter.
+            if (!_loading && _error == null && _products.isNotEmpty)
+              _FilterRow(
+                selected: _filter,
+                onSelect: (GearCategory? category) =>
+                    setState(() => _filter = category),
+              ),
+            Expanded(child: _buildBody(context)),
+          ],
+        ),
+      ),
     );
   }
 
@@ -111,20 +143,55 @@ class _StoreScreenState extends State<StoreScreen> {
       onRefresh: () => _load(showSpinner: false),
       child: _error != null
           ? _ErrorState(message: _error!, onRetry: () => _load())
-          : _ProductList(products: _products, onOpen: _openProduct),
+          : _ProductList(
+              products: _visible,
+              total: _products.length,
+              onOpen: _openProduct,
+              onClearFilter: () => setState(() => _filter = null),
+            ),
     );
   }
 }
 
 class _ProductList extends StatelessWidget {
-  const _ProductList({required this.products, required this.onOpen});
+  const _ProductList({
+    required this.products,
+    required this.total,
+    required this.onOpen,
+    required this.onClearFilter,
+  });
 
   final List<Product> products;
+
+  /// How many items came back before the filter, for the header line.
+  final int total;
   final void Function(Product) onOpen;
+  final VoidCallback onClearFilter;
 
   @override
   Widget build(BuildContext context) {
     final TextTheme text = Theme.of(context).textTheme;
+
+    if (products.isEmpty) {
+      return ListView(
+        // Keeps the pull-to-refresh alive on a short, unscrollable screen.
+        physics: const AlwaysScrollableScrollPhysics(),
+        children: <Widget>[
+          SizedBox(
+            height: 420,
+            child: EmptyState(
+              icon: Icons.backpack_rounded,
+              title: 'Nothing in this kind of kit',
+              message:
+                  'Nobody has listed anything here yet. '
+                  'Try another kind, or pull down to reload the shop.',
+              actionLabel: 'Show everything',
+              onAction: onClearFilter,
+            ),
+          ),
+        ],
+      );
+    }
 
     return ListView.separated(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
@@ -145,7 +212,9 @@ class _ProductList extends StatelessWidget {
               AppSpacing.md,
             ),
             child: Text(
-              '${products.length} products · live from fakestoreapi.com',
+              products.length == total
+                  ? '$total things our guides tell you to bring · live from fakestoreapi.com'
+                  : '${products.length} of $total picks · live from fakestoreapi.com',
               style: text.bodySmall,
             ),
           );
@@ -154,6 +223,61 @@ class _ProductList extends StatelessWidget {
         final Product product = products[index - 1];
         return ProductTile(product: product, onTap: () => onOpen(product));
       },
+    );
+  }
+}
+
+/// The kit filter: same pill row as the tour feed, so the screen does not look
+/// bolted on.
+class _FilterRow extends StatelessWidget {
+  const _FilterRow({required this.selected, required this.onSelect});
+
+  final GearCategory? selected;
+  final ValueChanged<GearCategory?> onSelect;
+
+  @override
+  Widget build(BuildContext context) {
+    // Index 0 is "All", which is why the count is one above the filter list.
+    return SizedBox(
+      height: 52,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.lg,
+          AppSpacing.sm,
+          AppSpacing.lg,
+          AppSpacing.sm,
+        ),
+        itemCount: GearCategory.filters.length + 1,
+        separatorBuilder: (BuildContext context, int index) =>
+            const SizedBox(width: AppSpacing.sm),
+        itemBuilder: (BuildContext context, int index) {
+          final GearCategory? category = index == 0
+              ? null
+              : GearCategory.filters[index - 1];
+          final bool active = category?.label == selected?.label;
+
+          return GestureDetector(
+            onTap: () => onSelect(category),
+            child: Container(
+              alignment: Alignment.center,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: active ? AppColors.brand : Colors.transparent,
+                borderRadius: AppRadius.pillAll,
+              ),
+              child: Text(
+                category?.label ?? 'All',
+                style: TextStyle(
+                  fontSize: 13.5,
+                  fontWeight: active ? FontWeight.w700 : FontWeight.w500,
+                  color: active ? Colors.white : AppColors.inkMuted,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -189,7 +313,7 @@ class _ErrorState extends StatelessWidget {
                       height: 76,
                       alignment: Alignment.center,
                       decoration: const BoxDecoration(
-                        color: AppColors.brandSoft,
+                        color: AppColors.brandTint,
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -200,7 +324,7 @@ class _ErrorState extends StatelessWidget {
                     ),
                     const SizedBox(height: AppSpacing.lg),
                     Text(
-                      'No connection to the store',
+                      'No connection to the picks',
                       textAlign: TextAlign.center,
                       style: text.titleLarge,
                     ),

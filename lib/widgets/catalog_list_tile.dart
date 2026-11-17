@@ -36,7 +36,7 @@ class CatalogListTile extends StatelessWidget {
         children: <Widget>[
           CircleAvatar(
             radius: 24,
-            backgroundColor: AppColors.brandSoft,
+            backgroundColor: AppColors.brandTint,
             child: Icon(catalogIcon(item.category), color: AppColors.brand),
           ),
           const SizedBox(width: AppSpacing.md),

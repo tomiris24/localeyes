@@ -239,14 +239,14 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
-              // Opens the store feed, which loads its products over the network.
+              // Opens the guide picks, which load over the network.
               IconButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (BuildContext context) => const StoreScreen(),
                   ),
                 ),
-                tooltip: 'Store',
+                tooltip: 'Guide picks',
                 icon: const Icon(Icons.storefront_rounded),
               ),
               const SizedBox(width: AppSpacing.xs),

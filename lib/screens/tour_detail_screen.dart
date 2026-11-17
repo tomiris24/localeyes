@@ -354,8 +354,8 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: const BoxDecoration(
-        color: AppColors.brandSoft,
-        borderRadius: AppRadius.pillAll,
+        color: AppColors.surface,
+        borderRadius: AppRadius.buttonAll,
       ),
       child: Row(
         children: List<Widget>.generate(_tabs.length, (int index) {
@@ -371,7 +371,17 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
                   color: selected ? Colors.white : Colors.transparent,
-                  borderRadius: AppRadius.pillAll,
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  // One soft shadow lifts the selected tab off the track.
+                  boxShadow: selected
+                      ? const <BoxShadow>[
+                          BoxShadow(
+                            color: Color(0x14000000),
+                            blurRadius: 6,
+                            offset: Offset(0, 1),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Text(
                   _tabs[index],
@@ -380,10 +390,8 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 14,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    // The soft blue track is too dark for the muted grey:
-                    // the deep brand colour keeps unselected tabs readable.
-                    color: selected ? AppColors.brand : AppColors.brandDeep,
+                    fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                    color: selected ? AppColors.ink : AppColors.inkMuted,
                   ),
                 ),
               ),
