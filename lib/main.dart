@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import 'core/app_theme.dart';
 import 'screens/home_shell.dart';
+import 'screens/map_screen.dart';
 import 'state/app_state.dart';
 import 'state/cart_provider.dart';
 
@@ -42,7 +43,7 @@ class _LocalEyesAppState extends State<LocalEyesApp> {
           title: 'LocalEyes',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light(),
-          home: const HomeShell(),
+          home: const MapScreen(),
         ),
       ),
     );
