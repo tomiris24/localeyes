@@ -302,7 +302,7 @@ class _SpotsBanner extends StatelessWidget {
             children: <Widget>[
               const Icon(
                 Icons.pin_drop_outlined,
-                color: AppColors.brandSoft,
+                color: Colors.white,
                 size: 26,
               ),
               const SizedBox(width: AppSpacing.md),
@@ -321,7 +321,7 @@ class _SpotsBanner extends StatelessWidget {
                     SizedBox(height: 2),
                     Text(
                       'Places locals added themselves, and why they matter',
-                      style: TextStyle(fontSize: 12.5, color: AppColors.brandSoft),
+                      style: TextStyle(fontSize: 12.5, color: Colors.white70),
                     ),
                   ],
                 ),

@@ -32,7 +32,7 @@ class CatalogGridCard extends StatelessWidget {
           Expanded(
             child: Container(
               width: double.infinity,
-              color: AppColors.brandSoft,
+              color: AppColors.brandTint,
               alignment: Alignment.center,
               child: Icon(
                 catalogIcon(item.category),

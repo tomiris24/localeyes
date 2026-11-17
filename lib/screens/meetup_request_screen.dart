@@ -321,7 +321,7 @@ class _IdeaOption extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Material(
-        color: selected ? AppColors.brandSoft.withValues(alpha: 0.35) : Colors.white,
+        color: selected ? AppColors.brandTint : Colors.white,
         borderRadius: AppRadius.cardAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(

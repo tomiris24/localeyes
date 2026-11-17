@@ -33,7 +33,7 @@ class FactTile extends StatelessWidget {
             height: 34,
             alignment: Alignment.center,
             decoration: const BoxDecoration(
-              color: AppColors.brandSoft,
+              color: AppColors.brandTint,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 18, color: AppColors.brand),

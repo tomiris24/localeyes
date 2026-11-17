@@ -247,7 +247,7 @@ class _MenuTile extends StatelessWidget {
             height: 38,
             alignment: Alignment.center,
             decoration: const BoxDecoration(
-              color: AppColors.brandSoft,
+              color: AppColors.brandTint,
               shape: BoxShape.circle,
             ),
             child: Icon(icon, size: 19, color: AppColors.brand),

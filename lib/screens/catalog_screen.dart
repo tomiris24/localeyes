@@ -64,7 +64,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
           behavior: SnackBarBehavior.floating,
           action: SnackBarAction(
             label: 'UNDO',
-            textColor: AppColors.brandSoft,
+            textColor: Colors.white,
             onPressed: () {
               if (!mounted) return;
               // Back where it was, not on top of the list.
