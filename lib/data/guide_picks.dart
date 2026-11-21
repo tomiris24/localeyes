@@ -1,7 +1,7 @@
 import '../models/guide.dart';
 import '../models/product.dart';
 import '../models/tour.dart';
-import 'mock_tours.dart';
+import '../state/data_store.dart';
 
 /// Why a piece of kit is in the app at all: a guide suggested it for one of
 /// their tours.
@@ -20,7 +20,7 @@ class GuidePick {
   Guide get guide => tour.guide;
 
   factory GuidePick.forProduct(Product product) {
-    final List<Tour> tours = MockData.tours;
+    final List<Tour> tours = DataStore.instance.tours;
     final List<String> notes = _notesFor(product.category);
     return GuidePick(
       tour: tours[product.id % tours.length],

@@ -20,7 +20,7 @@ class CartBadgeButton extends StatelessWidget {
     final int count = context.watch<CartProvider>().count;
 
     return Material(
-      color: Colors.white,
+      color: context.palette.surfaceHigh,
       shape: const CircleBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -31,10 +31,10 @@ class CartBadgeButton extends StatelessWidget {
           child: Stack(
             alignment: Alignment.center,
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.shopping_bag_outlined,
                 size: 22,
-                color: AppColors.ink,
+                color: context.palette.ink,
               ),
               // No badge at all on an empty cart — an empty circle would read
               // as "zero somethings" instead of "nothing yet".
@@ -47,8 +47,8 @@ class CartBadgeButton extends StatelessWidget {
                     height: 16,
                     alignment: Alignment.center,
                     padding: const EdgeInsets.symmetric(horizontal: 3),
-                    decoration: const BoxDecoration(
-                      color: AppColors.brand,
+                    decoration: BoxDecoration(
+                      color: context.palette.brandDeep,
                       borderRadius: AppRadius.pillAll,
                     ),
                     child: Text(

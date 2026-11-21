@@ -1,0 +1,58 @@
+[
+  {
+    "id": "c1",
+    "title": "Kolsai Lakes: slow hike to the second lake",
+    "category": "Mountains",
+    "rating": 4.9,
+    "price": 85.0
+  },
+  {
+    "id": "c2",
+    "title": "Green Bazaar tasting walk",
+    "category": "Food",
+    "rating": 4.8,
+    "price": 30.0
+  },
+  {
+    "id": "c3",
+    "title": "Soviet mosaics and modernism",
+    "category": "Culture",
+    "rating": 4.7,
+    "price": 25.0
+  },
+  {
+    "id": "c4",
+    "title": "Charyn Canyon day trip",
+    "category": "Mountains",
+    "rating": 4.9,
+    "price": 95.0
+  },
+  {
+    "id": "c5",
+    "title": "Old Almaty courtyards on foot",
+    "category": "City walk",
+    "rating": 4.6,
+    "price": 20.0
+  },
+  {
+    "id": "c6",
+    "title": "Shymbulak: first turns on the slope",
+    "category": "Ski",
+    "rating": 4.8,
+    "price": 120.0
+  },
+  {
+    "id": "c7",
+    "title": "Koktobe at sunset with a photographer",
+    "category": "Photography",
+    "rating": 4.9,
+    "price": 45.0
+  },
+  {
+    "id": "c8",
+    "title": "Zenkov Cathedral and Panfilov Park",
+    "category": "Culture",
+    "rating": 4.5,
+    "price": 15.0
+  }
+]

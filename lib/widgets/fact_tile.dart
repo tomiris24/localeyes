@@ -22,9 +22,9 @@ class FactTile extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surfaceHigh,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
       ),
       child: Row(
         children: <Widget>[
@@ -32,11 +32,11 @@ class FactTile extends StatelessWidget {
             width: 34,
             height: 34,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.brandTint,
+            decoration: BoxDecoration(
+              color: context.palette.brandTint,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 18, color: AppColors.brand),
+            child: Icon(icon, size: 18, color: context.palette.brand),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(

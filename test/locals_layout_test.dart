@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:localeyes/data/mock_locals.dart';
 import 'package:localeyes/main.dart';
 import 'package:localeyes/models/local_person.dart';
 import 'package:localeyes/screens/become_local_screen.dart';
@@ -10,6 +9,8 @@ import 'package:localeyes/screens/meetup_request_screen.dart';
 import 'package:localeyes/screens/spots_screen.dart';
 import 'package:localeyes/state/app_state.dart';
 import 'package:localeyes/widgets/local_card.dart';
+
+import 'fixtures/seed_data.dart';
 
 /// The same screen sizes the tour screens promise to support.
 const List<Size> _sizes = <Size>[
@@ -35,8 +36,10 @@ Future<void> _setSize(WidgetTester tester, Size size) async {
 }
 
 /// Wraps a screen in everything it needs to be pumped on its own.
-Widget _wrap(Widget child) =>
-    AppScope(notifier: AppState(), child: MaterialApp(home: child));
+Widget _wrap(Widget child) => AppScope(
+  notifier: AppState(),
+  child: MaterialApp(home: child),
+);
 
 /// Drags the page to the end, because the bottom of a long form is where a
 /// row usually runs out of width.
@@ -49,6 +52,10 @@ Future<void> _scrollToBottom(WidgetTester tester) async {
 }
 
 void main() {
+  setUp(() async {
+    await SeedData.installApp();
+  });
+
   group('No RenderFlex overflow on the locals screens', () {
     for (final Size size in _sizes) {
       testWidgets('locals feed at ${size.width}x${size.height}', (
@@ -69,10 +76,8 @@ void main() {
       ) async {
         await _setSize(tester, size);
 
-        for (final LocalPerson person in MockLocals.people) {
-          await tester.pumpWidget(
-            _wrap(LocalProfileScreen(person: person)),
-          );
+        for (final LocalPerson person in SeedData.people) {
+          await tester.pumpWidget(_wrap(LocalProfileScreen(person: person)));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: person.name);
 
@@ -81,23 +86,24 @@ void main() {
         }
       });
 
-      testWidgets('spots and the meetup request at ${size.width}x${size.height}', (
-        WidgetTester tester,
-      ) async {
-        await _setSize(tester, size);
+      testWidgets(
+        'spots and the meetup request at ${size.width}x${size.height}',
+        (WidgetTester tester) async {
+          await _setSize(tester, size);
 
-        await tester.pumpWidget(_wrap(const SpotsScreen()));
-        await tester.pumpAndSettle();
-        await _scrollToBottom(tester);
-        expect(tester.takeException(), isNull, reason: 'spots');
+          await tester.pumpWidget(_wrap(const SpotsScreen()));
+          await tester.pumpAndSettle();
+          await _scrollToBottom(tester);
+          expect(tester.takeException(), isNull, reason: 'spots');
 
-        await tester.pumpWidget(
-          _wrap(MeetupRequestScreen(person: MockLocals.people.first)),
-        );
-        await tester.pumpAndSettle();
-        await _scrollToBottom(tester);
-        expect(tester.takeException(), isNull, reason: 'meetup request');
-      });
+          await tester.pumpWidget(
+            _wrap(MeetupRequestScreen(person: SeedData.people.first)),
+          );
+          await tester.pumpAndSettle();
+          await _scrollToBottom(tester);
+          expect(tester.takeException(), isNull, reason: 'meetup request');
+        },
+      );
 
       testWidgets('become a local, every field in error, at '
           '${size.width}x${size.height}', (WidgetTester tester) async {
@@ -191,7 +197,7 @@ void main() {
     ) async {
       await _setSize(tester, const Size(390, 844));
       final AppState state = AppState();
-      final LocalPerson person = MockLocals.people.first;
+      final LocalPerson person = SeedData.people.first;
 
       await tester.pumpWidget(
         AppScope(
@@ -240,7 +246,7 @@ void main() {
     ) async {
       await _setSize(tester, const Size(390, 844));
       final AppState state = AppState();
-      final LocalPerson person = MockLocals.people.first;
+      final LocalPerson person = SeedData.people.first;
 
       await tester.pumpWidget(
         AppScope(

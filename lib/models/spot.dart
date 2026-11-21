@@ -1,3 +1,5 @@
+import 'json.dart';
+
 /// A place in the city as a resident sees it.
 ///
 /// A spot is not a tour and not an attraction listing: the point is [why] —
@@ -16,6 +18,20 @@ class Spot {
     required this.lng,
     this.bestTime = 'Any time',
   });
+
+  factory Spot.fromJson(Map<String, dynamic> json) => Spot(
+    id: asString(json['id']),
+    name: asString(json['name'], 'A place in the city'),
+    area: asString(json['area']),
+    kind: asString(json['kind']),
+    why: asString(json['why']),
+    addedById: asString(json['addedById']),
+    addedByName: asString(json['addedByName']),
+    saveCount: asInt(json['saveCount']),
+    bestTime: asString(json['bestTime'], 'Any time'),
+    lat: asDouble(json['lat']),
+    lng: asDouble(json['lng']),
+  );
 
   final String id;
   final String name;

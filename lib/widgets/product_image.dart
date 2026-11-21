@@ -53,12 +53,12 @@ class _ImageFallback extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ColoredBox(
-      color: AppColors.canvas,
+    return ColoredBox(
+      color: context.palette.canvas,
       child: Center(
         child: Icon(
           Icons.image_not_supported_outlined,
-          color: AppColors.inkMuted,
+          color: context.palette.inkMuted,
         ),
       ),
     );

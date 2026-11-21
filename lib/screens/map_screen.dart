@@ -3,10 +3,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../core/app_theme.dart';
-import '../data/mock_locals.dart';
 import '../data/route_api.dart';
 import '../models/local_person.dart';
 import '../models/spot.dart';
+import '../state/data_store.dart';
 import '../widgets/spot_card.dart';
 import 'local_profile_screen.dart';
 
@@ -46,7 +46,7 @@ class _MapScreenState extends State<MapScreen>
 
   /// Most saved first, so the carousel opens on the place people keep sending
   /// each other to.
-  late final List<Spot> _spots = List<Spot>.of(MockLocals.spots)
+  late final List<Spot> _spots = List<Spot>.of(DataStore.instance.spots)
     ..sort((Spot a, Spot b) => b.saveCount.compareTo(a.saveCount));
 
   int _selected = 0;
@@ -243,7 +243,7 @@ class _MapScreenState extends State<MapScreen>
         ),
       ),
       children: <Widget>[
-        const TileLayer(
+        TileLayer(
           urlTemplate:
               'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/'
               'World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}',
@@ -251,13 +251,12 @@ class _MapScreenState extends State<MapScreen>
           maxNativeZoom: 16,
         ),
         // Street and district names ride above the route, not under it.
-        const TileLayer(
+        TileLayer(
           urlTemplate:
               'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/'
               'World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
           userAgentPackageName: 'kz.narxoz.localeyes',
           maxNativeZoom: 16,
-          backgroundColor: Colors.transparent,
         ),
         if (_route != null)
           PolylineLayer<Object>(
@@ -271,7 +270,7 @@ class _MapScreenState extends State<MapScreen>
               Polyline<Object>(
                 points: _route!.points,
                 strokeWidth: 5,
-                color: AppColors.brand,
+                color: context.palette.brand,
               ),
             ],
           ),
@@ -398,7 +397,7 @@ class _MapScreenState extends State<MapScreen>
   }
 
   void _openAuthor(BuildContext context, Spot spot) {
-    final LocalPerson person = MockLocals.byId(spot.addedById);
+    final LocalPerson person = DataStore.instance.localById(spot.addedById);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => LocalProfileScreen(person: person),
@@ -444,10 +443,12 @@ class _SpotPin extends StatelessWidget {
             height: size,
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: highlighted ? AppColors.brand : Colors.white,
+              color: highlighted ? context.palette.brand : Colors.white,
               shape: BoxShape.circle,
               border: Border.all(
-                color: highlighted ? AppColors.brand : AppColors.line,
+                color: highlighted
+                    ? context.palette.brand
+                    : context.palette.line,
                 width: 2,
               ),
               boxShadow: const <BoxShadow>[
@@ -470,7 +471,7 @@ class _SpotPin extends StatelessWidget {
                 : Icon(
                     routeMode ? Icons.add_rounded : Icons.place_rounded,
                     size: highlighted ? 22 : 17,
-                    color: highlighted ? Colors.white : AppColors.brand,
+                    color: highlighted ? Colors.white : context.palette.brand,
                   ),
           ),
         ),
@@ -491,7 +492,7 @@ class _SpotMiniCard extends StatelessWidget {
     final TextTheme text = Theme.of(context).textTheme;
 
     return Material(
-      color: Colors.white,
+      color: context.palette.surface,
       borderRadius: AppRadius.cardAll,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -500,7 +501,7 @@ class _SpotMiniCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.lg),
           decoration: BoxDecoration(
             borderRadius: AppRadius.cardAll,
-            border: Border.all(color: AppColors.line),
+            border: Border.all(color: context.palette.line),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -510,10 +511,10 @@ class _SpotMiniCard extends StatelessWidget {
                 children: <Widget>[
                   Flexible(child: _KindBadge(kind: spot.kind)),
                   const SizedBox(width: AppSpacing.sm),
-                  const Icon(
+                  Icon(
                     Icons.favorite_rounded,
                     size: 13,
-                    color: AppColors.inkMuted,
+                    color: context.palette.inkMuted,
                   ),
                   const SizedBox(width: 4),
                   Text('${spot.saveCount}', style: text.bodySmall),
@@ -559,19 +560,19 @@ class _KindBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: const BoxDecoration(
-        color: AppColors.brandTint,
+      decoration: BoxDecoration(
+        color: context.palette.brandTint,
         borderRadius: AppRadius.pillAll,
       ),
       child: Text(
         kind.toUpperCase(),
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 10.5,
           fontWeight: FontWeight.w700,
           letterSpacing: 0.4,
-          color: AppColors.brandDeep,
+          color: context.palette.brandDeep,
         ),
       ),
     );
@@ -607,9 +608,9 @@ class _RoutePanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: AppRadius.cardAll,
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
         boxShadow: const <BoxShadow>[
           BoxShadow(
             color: Color(0x14000000),
@@ -649,7 +650,10 @@ class _RoutePanel extends StatelessWidget {
           ],
           if (error != null) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),
-            Text(error!, style: text.bodySmall?.copyWith(color: AppColors.ink)),
+            Text(
+              error!,
+              style: text.bodySmall?.copyWith(color: context.palette.ink),
+            ),
           ],
           const SizedBox(height: AppSpacing.md),
           if (stops.isEmpty)
@@ -714,8 +718,8 @@ class _StopChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.only(left: 6, right: 2),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: context.palette.surface,
         borderRadius: AppRadius.pillAll,
       ),
       child: Row(
@@ -725,8 +729,8 @@ class _StopChip extends StatelessWidget {
             width: 18,
             height: 18,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.brand,
+            decoration: BoxDecoration(
+              color: context.palette.brand,
               shape: BoxShape.circle,
             ),
             child: Text(
@@ -745,10 +749,10 @@ class _StopChip extends StatelessWidget {
               spot.name,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12.5,
                 fontWeight: FontWeight.w600,
-                color: AppColors.ink,
+                color: context.palette.ink,
               ),
             ),
           ),
@@ -758,10 +762,10 @@ class _StopChip extends StatelessWidget {
             visualDensity: VisualDensity.compact,
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-            icon: const Icon(
+            icon: Icon(
               Icons.close_rounded,
               size: 14,
-              color: AppColors.inkMuted,
+              color: context.palette.inkMuted,
             ),
           ),
         ],
@@ -787,7 +791,7 @@ class _PillButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: filled ? AppColors.action : Colors.white,
+      color: filled ? context.palette.action : context.palette.surface,
       borderRadius: AppRadius.pillAll,
       clipBehavior: Clip.antiAlias,
       elevation: 0,
@@ -801,7 +805,7 @@ class _PillButton extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: AppRadius.pillAll,
             border: Border.all(
-              color: filled ? AppColors.action : AppColors.line,
+              color: filled ? context.palette.action : context.palette.line,
             ),
           ),
           child: Row(
@@ -810,7 +814,7 @@ class _PillButton extends StatelessWidget {
               Icon(
                 icon,
                 size: 18,
-                color: filled ? Colors.white : AppColors.ink,
+                color: filled ? Colors.white : context.palette.ink,
               ),
               const SizedBox(width: AppSpacing.sm),
               Text(
@@ -818,7 +822,7 @@ class _PillButton extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: filled ? Colors.white : AppColors.ink,
+                  color: filled ? Colors.white : context.palette.ink,
                 ),
               ),
             ],
@@ -890,8 +894,8 @@ class _RoundButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.white,
-      shape: const CircleBorder(side: BorderSide(color: AppColors.line)),
+      color: context.palette.surface,
+      shape: CircleBorder(side: BorderSide(color: context.palette.line)),
       clipBehavior: Clip.antiAlias,
       child: Tooltip(
         message: tooltip,
@@ -900,7 +904,7 @@ class _RoundButton extends StatelessWidget {
           child: SizedBox(
             width: 40,
             height: 40,
-            child: Icon(icon, size: 20, color: AppColors.ink),
+            child: Icon(icon, size: 20, color: context.palette.ink),
           ),
         ),
       ),
@@ -957,8 +961,8 @@ class _PlacesSheet extends StatelessWidget {
     final TextTheme text = Theme.of(context).textTheme;
 
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.canvas,
+      decoration: BoxDecoration(
+        color: context.palette.canvas,
         borderRadius: BorderRadius.vertical(top: AppRadius.card),
       ),
       child: Center(
@@ -1006,7 +1010,7 @@ class _GrabHandle extends StatelessWidget {
         width: 36,
         height: 4,
         decoration: BoxDecoration(
-          color: AppColors.line,
+          color: context.palette.line,
           borderRadius: BorderRadius.circular(2),
         ),
       ),

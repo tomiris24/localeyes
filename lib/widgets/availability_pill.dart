@@ -8,7 +8,11 @@ import '../models/local_person.dart';
 /// "Free today" is the whole reason a traveller opens the app on the evening
 /// they land, so it gets the success colour and everything else stays quiet.
 class AvailabilityPill extends StatelessWidget {
-  const AvailabilityPill({super.key, required this.availability, this.dense = false});
+  const AvailabilityPill({
+    super.key,
+    required this.availability,
+    this.dense = false,
+  });
 
   final Availability availability;
   final bool dense;
@@ -20,9 +24,11 @@ class AvailabilityPill extends StatelessWidget {
         availability == Availability.tomorrow;
 
     final Color background = soon
-        ? AppColors.success.withValues(alpha: 0.12)
-        : AppColors.canvas;
-    final Color foreground = soon ? AppColors.success : AppColors.inkMuted;
+        ? context.palette.success.withValues(alpha: 0.12)
+        : context.palette.canvas;
+    final Color foreground = soon
+        ? context.palette.success
+        : context.palette.inkMuted;
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -32,7 +38,7 @@ class AvailabilityPill extends StatelessWidget {
       decoration: BoxDecoration(
         color: background,
         borderRadius: AppRadius.pillAll,
-        border: soon ? null : Border.all(color: AppColors.line),
+        border: soon ? null : Border.all(color: context.palette.line),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -40,7 +46,10 @@ class AvailabilityPill extends StatelessWidget {
           Container(
             width: 6,
             height: 6,
-            decoration: BoxDecoration(color: foreground, shape: BoxShape.circle),
+            decoration: BoxDecoration(
+              color: foreground,
+              shape: BoxShape.circle,
+            ),
           ),
           const SizedBox(width: 5),
           Flexible(

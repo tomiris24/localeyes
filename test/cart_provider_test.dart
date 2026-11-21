@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import 'package:localeyes/data/mock_tours.dart';
 import 'package:localeyes/main.dart';
 import 'package:localeyes/models/cart_item.dart';
 import 'package:localeyes/models/tour.dart';
@@ -10,6 +9,8 @@ import 'package:localeyes/screens/cart_screen.dart';
 import 'package:localeyes/state/cart_provider.dart';
 import 'package:localeyes/widgets/cart_badge_button.dart';
 import 'package:localeyes/widgets/cart_toggle_button.dart';
+
+import 'fixtures/seed_data.dart';
 
 const List<Size> _sizes = <Size>[
   Size(320, 568), // iPhone SE (1st gen) — the hardest case
@@ -113,7 +114,13 @@ Future<void> _openCart(WidgetTester tester) async {
 }
 
 void main() {
-  final List<Tour> tours = MockData.tours;
+  final List<Tour> tours = SeedData.tours;
+
+  // What `main.dart` does at startup: fill the store, here from the seed
+  // files over a fake server instead of MongoDB.
+  setUp(() async {
+    await SeedData.installApp();
+  });
 
   group('CartProvider', () {
     test('toggle puts a tour in and takes it back out', () {
@@ -225,7 +232,11 @@ void main() {
       await _pumpApp(tester);
 
       expect(find.byType(CartToggleButton), findsWidgets);
-      expect(await _badgeText(tester), isNull, reason: 'empty cart shows no badge');
+      expect(
+        await _badgeText(tester),
+        isNull,
+        reason: 'empty cart shows no badge',
+      );
     });
 
     testWidgets('the badge counts up as tours are added', (

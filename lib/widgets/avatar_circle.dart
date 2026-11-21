@@ -21,9 +21,9 @@ class AvatarCircle extends StatelessWidget {
       width: size,
       height: size,
       alignment: Alignment.center,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.brand,
+        color: context.palette.brandDeep,
       ),
       child: Text(
         initials,
@@ -49,14 +49,14 @@ class AvatarCircle extends StatelessWidget {
             bottom: -2,
             child: Container(
               padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: context.palette.surface,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.verified_rounded,
                 size: size * 0.32,
-                color: AppColors.success,
+                color: context.palette.success,
               ),
             ),
           ),

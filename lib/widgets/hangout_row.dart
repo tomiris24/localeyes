@@ -35,11 +35,15 @@ class HangoutRow extends StatelessWidget {
             width: 38,
             height: 38,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.canvas,
+            decoration: BoxDecoration(
+              color: context.palette.canvas,
               shape: BoxShape.circle,
             ),
-            child: Icon(hangoutIcon(idea.kind), size: 19, color: AppColors.brand),
+            child: Icon(
+              hangoutIcon(idea.kind),
+              size: 19,
+              color: context.palette.brand,
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(

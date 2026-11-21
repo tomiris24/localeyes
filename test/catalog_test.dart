@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 
-import 'package:localeyes/data/catalog_seed.dart';
-import 'package:localeyes/models/catalog_item.dart';
 import 'package:localeyes/screens/catalog_screen.dart';
+import 'package:localeyes/state/data_store.dart';
 import 'package:localeyes/widgets/catalog_grid_card.dart';
 import 'package:localeyes/widgets/catalog_list_tile.dart';
+
+import 'fixtures/fake_server.dart';
+import 'fixtures/seed_data.dart';
 
 const List<Size> _sizes = <Size>[
   Size(320, 568), // iPhone SE (1st gen) — the hardest case
@@ -19,8 +22,15 @@ Future<void> _setSize(WidgetTester tester, Size size) async {
   addTearDown(tester.view.reset);
 }
 
+/// The catalog screen over a store filled from the fake server — every
+/// delete, undo and refresh in these tests really goes through the API layer.
 Future<void> _pumpCatalog(WidgetTester tester) async {
-  await tester.pumpWidget(const MaterialApp(home: CatalogScreen()));
+  await tester.pumpWidget(
+    ChangeNotifierProvider<DataStore>.value(
+      value: DataStore.instance,
+      child: const MaterialApp(home: CatalogScreen()),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 
@@ -35,11 +45,13 @@ Future<void> _pullToRefresh(WidgetTester tester) async {
   await tester.fling(find.byType(ListView), const Offset(0, 320), 1000);
   await tester.pump(); // start the indicator
   await tester.pump(const Duration(seconds: 1)); // let it settle in
-  await tester.pump(const Duration(seconds: 2)); // past the 1500 ms delay
-  await tester.pumpAndSettle();
+  await tester.pumpAndSettle(); // the request comes back
 }
 
 void main() {
+  setUp(() async {
+    await SeedData.installApp();
+  });
   group('Lazy builders', () {
     testWidgets('the list is a ListView.separated with dividers', (
       WidgetTester tester,
@@ -78,21 +90,22 @@ void main() {
     });
 
     for (final Size size in _sizes) {
-      testWidgets('no overflow in either view at ${size.width}x${size.height}', (
-        WidgetTester tester,
-      ) async {
-        await _setSize(tester, size);
-        await _pumpCatalog(tester);
-        expect(tester.takeException(), isNull, reason: 'list');
+      testWidgets(
+        'no overflow in either view at ${size.width}x${size.height}',
+        (WidgetTester tester) async {
+          await _setSize(tester, size);
+          await _pumpCatalog(tester);
+          expect(tester.takeException(), isNull, reason: 'list');
 
-        await tester.tap(find.byIcon(Icons.grid_view_rounded));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull, reason: 'grid');
+          await tester.tap(find.byIcon(Icons.grid_view_rounded));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull, reason: 'grid');
 
-        await tester.drag(find.byType(GridView), const Offset(0, -400));
-        await tester.pumpAndSettle();
-        expect(tester.takeException(), isNull, reason: 'grid scrolled');
-      });
+          await tester.drag(find.byType(GridView), const Offset(0, -400));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull, reason: 'grid scrolled');
+        },
+      );
     }
   });
 
@@ -102,12 +115,11 @@ void main() {
       await _pumpCatalog(tester);
 
       final String firstBefore = _visibleTitles(tester).first;
-      final CatalogItem generated = CatalogSeed.generate(1);
 
       await _pullToRefresh(tester);
 
       final List<String> after = _visibleTitles(tester);
-      expect(after.first, generated.title);
+      expect(after.first, FakeServer.generatedTitles.first);
       expect(after[1], firstBefore);
     });
   });
@@ -151,7 +163,10 @@ void main() {
         find.byType(CatalogGridCard).first,
       );
 
-      await tester.drag(find.byType(CatalogGridCard).first, const Offset(-400, 0));
+      await tester.drag(
+        find.byType(CatalogGridCard).first,
+        const Offset(-400, 0),
+      );
       await tester.pumpAndSettle();
 
       expect(find.byType(CatalogGridCard), findsNWidgets(before - 1));
@@ -187,9 +202,12 @@ void main() {
       await _setSize(tester, const Size(390, 844));
       await _pumpCatalog(tester);
 
-      final int total = CatalogSeed.initial().length;
+      final int total = SeedData.catalog.length;
       for (int i = 0; i < total; i++) {
-        await tester.drag(find.byType(CatalogListTile).first, const Offset(-500, 0));
+        await tester.drag(
+          find.byType(CatalogListTile).first,
+          const Offset(-500, 0),
+        );
         await tester.pumpAndSettle();
       }
 

@@ -21,14 +21,16 @@ class _GalleryShot {
     required this.fit,
     required this.alignment,
     required this.padding,
-    required this.background,
+    this.background,
   });
 
   final String label;
   final BoxFit fit;
   final Alignment alignment;
   final EdgeInsets padding;
-  final Color background;
+
+  /// Null means the page colour of the theme in force.
+  final Color? background;
 }
 
 /// One of the guide's picks: hero image carousel, the full description, who
@@ -63,7 +65,8 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       fit: BoxFit.contain,
       alignment: Alignment.bottomCenter,
       padding: EdgeInsets.fromLTRB(60, 48, 60, 24),
-      background: AppColors.canvas,
+      // Null means "the page colour", picked when the shot is drawn.
+      background: null,
     ),
   ];
 
@@ -102,9 +105,9 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
     final TextTheme text = Theme.of(context).textTheme;
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: context.palette.canvas,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: context.palette.canvas,
         title: const Text('Guide pick'),
         actions: <Widget>[
           IconButton(
@@ -137,10 +140,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
-                    const Icon(
+                    Icon(
                       Icons.star_rounded,
                       size: 16,
-                      color: AppColors.star,
+                      color: context.palette.star,
                     ),
                     const SizedBox(width: 2),
                     Text(product.ratingLabel, style: text.titleSmall),
@@ -216,7 +219,7 @@ class _Carousel extends StatelessWidget {
             itemBuilder: (BuildContext context, int index) {
               final _GalleryShot shot = shots[index];
               final Widget image = ColoredBox(
-                color: shot.background,
+                color: shot.background ?? context.palette.canvas,
                 child: ProductImage(
                   url: product.imageUrl,
                   fit: shot.fit,
@@ -257,7 +260,9 @@ class _Carousel extends StatelessWidget {
                   width: active ? 20 : 7,
                   height: 7,
                   decoration: BoxDecoration(
-                    color: active ? AppColors.brand : AppColors.line,
+                    color: active
+                        ? context.palette.brand
+                        : context.palette.line,
                     borderRadius: AppRadius.pillAll,
                   ),
                 );
@@ -279,8 +284,8 @@ class _Pill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: const BoxDecoration(
-        color: AppColors.ink,
+      decoration: BoxDecoration(
+        color: context.palette.ink,
         borderRadius: AppRadius.pillAll,
       ),
       child: Text(
@@ -309,8 +314,8 @@ class _GuideNote extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: const BoxDecoration(
-        color: AppColors.canvas,
+      decoration: BoxDecoration(
+        color: context.palette.canvas,
         borderRadius: AppRadius.cardAll,
       ),
       child: Column(
@@ -372,27 +377,27 @@ class _DeepLinkRow extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.canvas,
+          color: context.palette.canvas,
           borderRadius: AppRadius.cardAll,
-          border: Border.all(color: AppColors.line),
+          border: Border.all(color: context.palette.line),
         ),
         child: Row(
           children: <Widget>[
-            const Icon(Icons.link_rounded, size: 18, color: AppColors.brand),
+            Icon(Icons.link_rounded, size: 18, color: context.palette.brand),
             const SizedBox(width: AppSpacing.sm),
             Expanded(
               child: Text(
                 product.deepLink,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.ink,
+                  color: context.palette.ink,
                 ),
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: AppColors.inkMuted),
+            Icon(Icons.chevron_right_rounded, color: context.palette.inkMuted),
           ],
         ),
       ),
@@ -416,9 +421,9 @@ class _BuyBar extends StatelessWidget {
     final TextTheme text = Theme.of(context).textTheme;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.line)),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        border: Border(top: BorderSide(color: context.palette.line)),
       ),
       child: SafeArea(
         top: false,

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/app_theme.dart';
-import '../data/catalog_seed.dart';
+import '../data/api_client.dart';
 import '../models/catalog_item.dart';
+import '../state/data_store.dart';
 import '../widgets/catalog_grid_card.dart';
 import '../widgets/catalog_list_tile.dart';
 import '../widgets/empty_state.dart';
@@ -25,11 +27,11 @@ class CatalogScreen extends StatefulWidget {
 }
 
 class _CatalogScreenState extends State<CatalogScreen> {
-  List<CatalogItem> _items = CatalogSeed.initial();
   CatalogView _view = CatalogView.list;
 
-  /// Counts the refreshes, so every generated item gets its own id.
-  int _refreshCount = 0;
+  /// The rows live in the [DataStore], which is what the server answered.
+  /// Every change here is sent to the API first and then shown.
+  List<CatalogItem> get _items => context.watch<DataStore>().catalog;
 
   void _toggleView() {
     setState(() {
@@ -37,24 +39,24 @@ class _CatalogScreenState extends State<CatalogScreen> {
     });
   }
 
-  /// Pull-to-refresh: pretends to call the network, then puts the new item at
-  /// the very top of the catalog.
+  /// Pull-to-refresh: the server makes the new item and it lands at the very
+  /// top of the catalog.
   Future<void> _refresh() async {
-    await Future<void>.delayed(const Duration(milliseconds: 1500));
-    if (!mounted) return;
-    setState(() {
-      _refreshCount++;
-      _items.insert(0, CatalogSeed.generate(_refreshCount));
-    });
+    try {
+      await context.read<DataStore>().addCatalogItem();
+    } on ApiException catch (error) {
+      _showMessage(error.message);
+    }
   }
 
   /// Swipe-to-delete. The row is already gone from the screen by the time this
   /// runs, so we remember [index] first and hand it to UNDO.
   void _removeItem(CatalogItem item) {
-    final int index = _items.indexOf(item);
+    final DataStore store = context.read<DataStore>();
+    final int index = store.catalog.indexOf(item);
     if (index < 0) return;
 
-    setState(() => _items.removeAt(index));
+    _run(() => store.removeCatalogItem(item));
 
     ScaffoldMessenger.of(context)
       ..clearSnackBars()
@@ -68,23 +70,36 @@ class _CatalogScreenState extends State<CatalogScreen> {
             onPressed: () {
               if (!mounted) return;
               // Back where it was, not on top of the list.
-              setState(() => _items.insert(index, item));
+              _run(() => store.restoreCatalogItem(item, index));
             },
           ),
         ),
       );
   }
 
-  void _resetCatalog() {
-    setState(() {
-      _items = CatalogSeed.initial();
-      _refreshCount = 0;
+  void _resetCatalog() => _run(context.read<DataStore>().resetCatalog);
+
+  /// Fire-and-forget calls to the API: the store has already moved the row, so
+  /// the only thing left to do is say when the server disagreed.
+  void _run(Future<void> Function() action) {
+    action().onError<ApiException>((ApiException error, StackTrace _) {
+      _showMessage(error.message);
     });
+  }
+
+  void _showMessage(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
+      );
   }
 
   @override
   Widget build(BuildContext context) {
     final bool isList = _view == CatalogView.list;
+    final List<CatalogItem> items = _items;
 
     return Scaffold(
       appBar: AppBar(
@@ -107,9 +122,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
           constraints: const BoxConstraints(maxWidth: 720),
           child: RefreshIndicator(
             onRefresh: _refresh,
-            child: _items.isEmpty
+            child: items.isEmpty
                 ? _buildEmpty()
-                : (isList ? _buildList() : _buildGrid()),
+                : (isList ? _buildList(items) : _buildGrid(items)),
           ),
         ),
       ),
@@ -117,16 +132,16 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   /// Lazy list with a thin divider between the rows.
-  Widget _buildList() {
+  Widget _buildList(List<CatalogItem> items) {
     return ListView.separated(
       // Lets the user pull down even when the rows do not fill the screen.
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
-      itemCount: _items.length,
+      itemCount: items.length,
       separatorBuilder: (BuildContext context, int index) =>
-          const Divider(height: 1, thickness: 1, color: AppColors.line),
+          Divider(height: 1, thickness: 1, color: context.palette.line),
       itemBuilder: (BuildContext context, int index) {
-        final CatalogItem item = _items[index];
+        final CatalogItem item = items[index];
         return Dismissible(
           // The key has to identify the item, not its position — without it
           // Flutter would animate away the wrong row after a removal.
@@ -153,7 +168,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   /// Two columns, built lazily.
-  Widget _buildGrid() {
+  Widget _buildGrid(List<CatalogItem> items) {
     return GridView.builder(
       physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(AppSpacing.lg),
@@ -164,9 +179,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
         crossAxisSpacing: AppSpacing.md,
         mainAxisSpacing: AppSpacing.md,
       ),
-      itemCount: _items.length,
+      itemCount: items.length,
       itemBuilder: (BuildContext context, int index) {
-        final CatalogItem item = _items[index];
+        final CatalogItem item = items[index];
         // The cells are swipeable too, so a long-tour card can be thrown away
         // without switching back to the list first.
         return Dismissible(

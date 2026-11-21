@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
-import '../data/mock_locals.dart';
+import '../data/api_client.dart';
 import '../models/local_person.dart';
 import '../state/app_state.dart';
+import '../state/auth_controller.dart';
+import '../state/data_store.dart';
 import '../widgets/hangout_row.dart';
 import '../widgets/section_header.dart';
 
@@ -31,12 +33,16 @@ class _MeetupRequestScreenState extends State<MeetupRequestScreen> {
     'Sun 26 Oct',
     'Mon 27 Oct',
   ];
-  static const List<String> _times = <String>['Morning', 'Afternoon', 'Evening'];
+  static const List<String> _times = <String>[
+    'Morning',
+    'Afternoon',
+    'Evening',
+  ];
 
   late HangoutKind _kind = widget.person.hangouts.first.kind;
   String _day = _days.first;
   String _time = _times.last;
-  String _place = MockLocals.publicMeetingPlaces.first;
+  String _place = DataStore.instance.publicMeetingPlaces.first;
   bool _tellAFriend = true;
 
   AutovalidateMode _autovalidate = AutovalidateMode.disabled;
@@ -64,6 +70,8 @@ class _MeetupRequestScreenState extends State<MeetupRequestScreen> {
       return;
     }
 
+    final String message = _messageController.text.trim();
+
     AppScope.of(context).sendMeetupRequest(
       MeetupRequest(
         localId: widget.person.id,
@@ -71,9 +79,25 @@ class _MeetupRequestScreenState extends State<MeetupRequestScreen> {
         timeOfDay: _time,
         kind: _kind,
         place: _place,
-        message: _messageController.text.trim(),
+        message: message,
       ),
     );
+
+    // The request is stored server-side as well; the local answers it there in
+    // a later milestone. The screen does not wait for it — the traveller gets
+    // their confirmation either way, and a failure shows up as a SnackBar.
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    DataStore.instance
+        .sendMeetupRequest(
+          localId: widget.person.id,
+          travellerName: AuthController.instance.account?.name ?? 'A traveller',
+          when: '$_day, ${_time.toLowerCase()}',
+          meetingPlace: _place,
+          message: message,
+        )
+        .onError<ApiException>((ApiException error, StackTrace _) {
+          messenger.showSnackBar(SnackBar(content: Text(error.message)));
+        });
 
     Navigator.of(context).pop();
     ScaffoldMessenger.of(context)
@@ -140,7 +164,8 @@ class _MeetupRequestScreenState extends State<MeetupRequestScreen> {
 
                 const SectionHeader(
                   title: 'What you fancy',
-                  subtitle: 'Pick one of their ideas — it can change on the day',
+                  subtitle:
+                      'Pick one of their ideas — it can change on the day',
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 for (final HangoutIdea idea in person.hangouts)
@@ -159,20 +184,21 @@ class _MeetupRequestScreenState extends State<MeetupRequestScreen> {
                 DropdownButtonFormField<String>(
                   initialValue: _place,
                   isExpanded: true,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: context.palette.surfaceHigh,
                     border: OutlineInputBorder(
                       borderRadius: AppRadius.cardAll,
-                      borderSide: BorderSide(color: AppColors.line),
+                      borderSide: BorderSide(color: context.palette.line),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: AppRadius.cardAll,
-                      borderSide: BorderSide(color: AppColors.line),
+                      borderSide: BorderSide(color: context.palette.line),
                     ),
                   ),
                   items: <DropdownMenuItem<String>>[
-                    for (final String place in MockLocals.publicMeetingPlaces)
+                    for (final String place
+                        in DataStore.instance.publicMeetingPlaces)
                       DropdownMenuItem<String>(
                         value: place,
                         child: Text(place, overflow: TextOverflow.ellipsis),
@@ -190,19 +216,19 @@ class _MeetupRequestScreenState extends State<MeetupRequestScreen> {
                   maxLines: 4,
                   maxLength: 400,
                   validator: _validateMessage,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText:
                         'Who you are, how long you are in town, what you are '
                         'curious about…',
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: context.palette.surfaceHigh,
                     border: OutlineInputBorder(
                       borderRadius: AppRadius.cardAll,
-                      borderSide: BorderSide(color: AppColors.line),
+                      borderSide: BorderSide(color: context.palette.line),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: AppRadius.cardAll,
-                      borderSide: BorderSide(color: AppColors.line),
+                      borderSide: BorderSide(color: context.palette.line),
                     ),
                   ),
                 ),
@@ -218,9 +244,12 @@ class _MeetupRequestScreenState extends State<MeetupRequestScreen> {
                     'Send my plan to a friend',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'They get the place, the time and who you are meeting.',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.inkMuted),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: context.palette.inkMuted,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -282,15 +311,15 @@ class _ChipRow extends StatelessWidget {
             selected: isSelected,
             onSelected: (_) => onSelect(option),
             showCheckmark: false,
-            backgroundColor: Colors.white,
-            selectedColor: AppColors.brand,
+            backgroundColor: context.palette.surfaceHigh,
+            selectedColor: context.palette.brandDeep,
             side: BorderSide(
-              color: isSelected ? AppColors.brand : AppColors.line,
+              color: isSelected ? context.palette.brand : context.palette.line,
             ),
             labelStyle: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : AppColors.ink,
+              color: isSelected ? Colors.white : context.palette.ink,
             ),
             shape: const RoundedRectangleBorder(
               borderRadius: AppRadius.pillAll,
@@ -321,7 +350,9 @@ class _IdeaOption extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Material(
-        color: selected ? AppColors.brandTint : Colors.white,
+        color: selected
+            ? context.palette.brandTint
+            : context.palette.surfaceHigh,
         borderRadius: AppRadius.cardAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -331,7 +362,7 @@ class _IdeaOption extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: AppRadius.cardAll,
               border: Border.all(
-                color: selected ? AppColors.brand : AppColors.line,
+                color: selected ? context.palette.brand : context.palette.line,
                 width: selected ? 1.5 : 1,
               ),
             ),
@@ -341,7 +372,9 @@ class _IdeaOption extends StatelessWidget {
                 Icon(
                   hangoutIcon(idea.kind),
                   size: 20,
-                  color: selected ? AppColors.brand : AppColors.inkMuted,
+                  color: selected
+                      ? context.palette.brand
+                      : context.palette.inkMuted,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
@@ -355,10 +388,10 @@ class _IdeaOption extends StatelessWidget {
                   ),
                 ),
                 if (selected)
-                  const Icon(
+                  Icon(
                     Icons.check_circle_rounded,
                     size: 19,
-                    color: AppColors.brand,
+                    color: context.palette.brand,
                   ),
               ],
             ),
@@ -390,9 +423,9 @@ class _Summary extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: AppRadius.cardAll,
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
       ),
       child: Column(
         children: <Widget>[
@@ -424,17 +457,17 @@ class _Line extends StatelessWidget {
             width: 58,
             child: Text(
               label,
-              style: const TextStyle(fontSize: 12.5, color: AppColors.inkMuted),
+              style: TextStyle(fontSize: 12.5, color: context.palette.inkMuted),
             ),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13.5,
                 fontWeight: FontWeight.w600,
-                color: AppColors.ink,
+                color: context.palette.ink,
               ),
             ),
           ),

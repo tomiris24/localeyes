@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
-import '../data/mock_locals.dart';
 import '../models/local_person.dart';
+import '../state/data_store.dart';
 import '../widgets/hangout_row.dart';
 import '../widgets/section_header.dart';
 
@@ -27,7 +27,13 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
   final TextEditingController _timesController = TextEditingController();
   final TextEditingController _rateController = TextEditingController();
 
-  static const List<String> _levels = <String>['Native', 'C1', 'B2', 'B1', 'A2'];
+  static const List<String> _levels = <String>[
+    'Native',
+    'C1',
+    'B2',
+    'B1',
+    'A2',
+  ];
   static const List<String> _spokenHere = <String>[
     'Kazakh',
     'Russian',
@@ -43,7 +49,7 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
   final Set<String> _interests = <String>{};
   final Set<HangoutKind> _hangouts = <HangoutKind>{};
 
-  String _area = MockLocals.areas[1];
+  String _area = DataStore.instance.areas[1];
   Availability _availability = Availability.weekend;
   MeetupCost _cost = MeetupCost.free;
   bool _acceptedRules = false;
@@ -85,7 +91,9 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
   String? _validateOneLiner(String? value) {
     final String line = (value ?? '').trim();
     if (line.isEmpty) return 'One sentence is all we need to start';
-    if (line.length < 25) return 'A little more — this is what travellers read first';
+    if (line.length < 25) {
+      return 'A little more — this is what travellers read first';
+    }
     return null;
   }
 
@@ -173,14 +181,16 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: AppColors.brandTint,
+                    color: context.palette.brandTint,
                     borderRadius: AppRadius.cardAll,
                   ),
                   child: Text(
                     'You do not need a licence, a route or any experience. If '
                     'you like this city and you like talking to people, that '
                     'is the whole requirement.',
-                    style: text.bodyMedium?.copyWith(color: AppColors.brandDeep),
+                    style: text.bodyMedium?.copyWith(
+                      color: context.palette.brandDeep,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
@@ -215,10 +225,10 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
                         child: DropdownButtonFormField<String>(
                           initialValue: _area,
                           isExpanded: true,
-                          decoration: _decoration(null),
+                          decoration: _decoration(context, null),
                           items: <DropdownMenuItem<String>>[
                             for (final String area
-                                in MockLocals.areas.skip(1))
+                                in DataStore.instance.areas.skip(1))
                               DropdownMenuItem<String>(
                                 value: area,
                                 child: Text(
@@ -261,19 +271,19 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
                         label: Text(language),
                         selected: _languages.containsKey(language),
                         showCheckmark: false,
-                        backgroundColor: Colors.white,
-                        selectedColor: AppColors.brand,
+                        backgroundColor: context.palette.surfaceHigh,
+                        selectedColor: context.palette.brandDeep,
                         side: BorderSide(
                           color: _languages.containsKey(language)
-                              ? AppColors.brand
-                              : AppColors.line,
+                              ? context.palette.brand
+                              : context.palette.line,
                         ),
                         labelStyle: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: _languages.containsKey(language)
                               ? Colors.white
-                              : AppColors.ink,
+                              : context.palette.ink,
                         ),
                         shape: const RoundedRectangleBorder(
                           borderRadius: AppRadius.pillAll,
@@ -293,16 +303,14 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
                     padding: const EdgeInsets.only(top: AppSpacing.sm),
                     child: Row(
                       children: <Widget>[
-                        Expanded(
-                          child: Text(language, style: text.titleSmall),
-                        ),
+                        Expanded(child: Text(language, style: text.titleSmall)),
                         const SizedBox(width: AppSpacing.sm),
                         SizedBox(
                           width: 128,
                           child: DropdownButtonFormField<String>(
                             initialValue: _languages[language],
                             isExpanded: true,
-                            decoration: _decoration(null, dense: true),
+                            decoration: _decoration(context, null, dense: true),
                             items: <DropdownMenuItem<String>>[
                               for (final String level in _levels)
                                 DropdownMenuItem<String>(
@@ -329,24 +337,24 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
                   children: <Widget>[
-                    for (final String interest in MockLocals.interests)
+                    for (final String interest in DataStore.instance.interests)
                       FilterChip(
                         label: Text(interest),
                         selected: _interests.contains(interest),
                         showCheckmark: false,
-                        backgroundColor: Colors.white,
-                        selectedColor: AppColors.brand,
+                        backgroundColor: context.palette.surfaceHigh,
+                        selectedColor: context.palette.brandDeep,
                         side: BorderSide(
                           color: _interests.contains(interest)
-                              ? AppColors.brand
-                              : AppColors.line,
+                              ? context.palette.brand
+                              : context.palette.line,
                         ),
                         labelStyle: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
                           color: _interests.contains(interest)
                               ? Colors.white
-                              : AppColors.ink,
+                              : context.palette.ink,
                         ),
                         shape: const RoundedRectangleBorder(
                           borderRadius: AppRadius.pillAll,
@@ -367,7 +375,8 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
 
                 const SectionHeader(
                   title: 'What you would happily do',
-                  subtitle: 'No route to write — just tick what sounds like you',
+                  subtitle:
+                      'No route to write — just tick what sounds like you',
                 ),
                 const SizedBox(height: AppSpacing.sm),
                 for (final HangoutKind kind in HangoutKind.values)
@@ -460,10 +469,13 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
                     'I will meet first-timers in a public place',
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
-                  subtitle: const Text(
+                  subtitle: Text(
                     'Both sides agree to this. It is what makes meeting a '
                     'stranger reasonable.',
-                    style: TextStyle(fontSize: 12.5, color: AppColors.inkMuted),
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      color: context.palette.inkMuted,
+                    ),
                   ),
                 ),
                 if (_showRulesError)
@@ -490,27 +502,31 @@ class _BecomeLocalScreenState extends State<BecomeLocalScreen> {
   }
 }
 
-InputDecoration _decoration(String? hint, {bool dense = false}) {
+InputDecoration _decoration(
+  BuildContext context,
+  String? hint, {
+  bool dense = false,
+}) {
   return InputDecoration(
     hintText: hint,
     filled: true,
-    fillColor: Colors.white,
+    fillColor: context.palette.surfaceHigh,
     isDense: dense,
     contentPadding: EdgeInsets.symmetric(
       horizontal: AppSpacing.md,
       vertical: dense ? 12 : 16,
     ),
-    border: const OutlineInputBorder(
+    border: OutlineInputBorder(
       borderRadius: AppRadius.cardAll,
-      borderSide: BorderSide(color: AppColors.line),
+      borderSide: BorderSide(color: context.palette.line),
     ),
-    enabledBorder: const OutlineInputBorder(
+    enabledBorder: OutlineInputBorder(
       borderRadius: AppRadius.cardAll,
-      borderSide: BorderSide(color: AppColors.line),
+      borderSide: BorderSide(color: context.palette.line),
     ),
-    focusedBorder: const OutlineInputBorder(
+    focusedBorder: OutlineInputBorder(
       borderRadius: AppRadius.cardAll,
-      borderSide: BorderSide(color: AppColors.brand),
+      borderSide: BorderSide(color: context.palette.brand),
     ),
   );
 }
@@ -529,10 +545,10 @@ class _Labelled extends StatelessWidget {
       children: <Widget>[
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: AppColors.ink,
+            color: context.palette.ink,
           ),
         ),
         const SizedBox(height: 6),
@@ -574,7 +590,7 @@ class _Field extends StatelessWidget {
         maxLines: maxLines,
         maxLength: maxLength,
         textCapitalization: textCapitalization,
-        decoration: _decoration(hint),
+        decoration: _decoration(context, hint),
       ),
     );
   }
@@ -636,7 +652,7 @@ class _HangoutToggle extends StatelessWidget {
       secondary: Icon(
         hangoutIcon(kind),
         size: 19,
-        color: selected ? AppColors.brand : AppColors.inkMuted,
+        color: selected ? context.palette.brand : context.palette.inkMuted,
       ),
       title: Text(
         kind.label,

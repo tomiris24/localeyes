@@ -21,9 +21,9 @@ class QuantityStepper extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surfaceHigh,
         borderRadius: AppRadius.pillAll,
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -77,7 +77,7 @@ class _StepButton extends StatelessWidget {
           child: Icon(
             icon,
             size: 18,
-            color: enabled ? AppColors.brand : AppColors.line,
+            color: enabled ? context.palette.brand : context.palette.line,
           ),
         ),
       ),

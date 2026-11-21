@@ -4,7 +4,9 @@ Choose the right local guide, not just any guide.
 
 LocalEyes is a marketplace that connects travellers with independent local
 guides in Almaty. This repository is **Milestone 1** of the capstone project:
-the MVP user interface, built in Flutter with mock data and no backend yet.
+the MVP user interface, built in Flutter. Milestone 2 added the backend: a
+Node + Express REST API over MongoDB in `server/`, which is where every tour,
+local, spot and catalog row now comes from.
 
 Author: Tomiris Suleimenova, Narxoz University.
 
@@ -46,8 +48,9 @@ guide **fill empty dates with clients they can trust**.
 3. **Saved** — everything the bookmark badge collected.
 4. **Profile** — the traveller's own profile, interests and safety settings.
 5. **Cart** — what was added from the detail screen, with the booking request.
-6. **Register** — account creation with full form validation, a terms
-   checkbox and a role dropdown (reached from Profile).
+6. **Sign in / Create account** — the first screen of the app when nobody is
+   signed in, and where "Log out" on the profile leads back to. One form with
+   two modes, full validation, a terms checkbox and a role dropdown.
 7. **Locals** — the people who live here, with availability filters, their
    profiles and a meetup request form.
 8. **Catalog** — the same items as a lazy list or a 2-column grid, with
@@ -67,8 +70,8 @@ guide **fill empty dates with clients they can trust**.
 | About / Route / Reviews tab toggle | `lib/screens/tour_detail_screen.dart` |
 | Group size stepper that recalculates the total price | `lib/screens/tour_detail_screen.dart` |
 | Date picker chips | `lib/screens/tour_detail_screen.dart` |
-| Bottom navigation | `lib/screens/home_shell.dart` |
-| Registration form: live validation, password visibility, terms checkbox, role dropdown | `lib/screens/register_screen.dart` |
+| Bottom navigation with the centre action | `lib/widgets/app_bottom_nav.dart` |
+| Sign in / sign up switch, live validation, password visibility, terms checkbox, role dropdown | `lib/screens/auth_screen.dart` |
 | Catalog list / grid toggle, pull-to-refresh, swipe-to-delete with undo | `lib/screens/catalog_screen.dart` |
 | Global cart: add-to-cart toggles, live app-bar badge, total, Clear All | `lib/state/cart_provider.dart` |
 
@@ -250,8 +253,8 @@ meetup requests still live in `AppState` behind the `InheritedNotifier`.
 `test/layout_overflow_test.dart` opens the feed, the saved screen, the profile
 and **every** tour detail screen (including all three tabs and the bottom of the
 page) at six screen sizes, from 320×568 to 1280×800, and fails if Flutter
-reports any overflow. `test/register_form_test.dart` does the same for the
-registration screen at four sizes, with every field in its error state — the
+reports any overflow. `test/auth_form_test.dart` does the same for the
+sign-up form at four sizes, with every field in its error state — the
 tallest the form can get. `test/locals_layout_test.dart` covers the locals
 screens, `test/catalog_test.dart` checks both catalog views at 320×568,
 390×844 and 768×1024 including the grid after a scroll, and
@@ -263,6 +266,38 @@ flutter test
 flutter analyze
 # No issues found
 ```
+
+## The look
+
+The app follows one design system, and it ships in both appearances: light by
+default, dark when the phone is dark (`ThemeMode.system`).
+
+| Token | Light | Dark |
+| --- | --- | --- |
+| `canvas` — the page | `#F8FAFC` | `#0B0B0F` |
+| `surface` — cards and sheets | `#FFFFFF` | `#1F2937` |
+| `surfaceHigh` — chips, inputs | `#F1F5F9` | `#2A3545` |
+| `ink` / `inkMuted` — type | `#0F172A` / `#64748B` | `#F1F5F9` / `#94A3B8` |
+| `brand` / `brandDeep` — the one accent | `#6366F1` / `#4F46E5` | `#8E97FF` / `#4F46E5` |
+| `success` / `warning` / `error` | `#10B981` / `#F59E0B` / `#EF4444` | lightened for dark |
+
+Both palettes live in `AppPalette` (`lib/core/app_theme.dart`) as a
+`ThemeExtension`, and every widget reads them through `context.palette` — no
+screen contains a hex code, which is what lets one theme switch repaint the
+whole app.
+
+* **Type** — Plus Jakarta Sans, shipped with the app as one variable file
+  (`assets/fonts/`, OFL). H1 30 / H2 24 / H3 20 semibold, body 16 and 14 at
+  150%, caption 12.
+* **Shape and size** — cards 16, buttons and chips are capsules; buttons are
+  48 / 44 / 36 tall, chips 32, search 48 (`AppSize`).
+* **Photo headers** — Explore, Locals and Profile open on a photograph of
+  Almaty with the screen's name on it (`lib/widgets/photo_header.dart`), and
+  the feature card on the Locals tab works the same way. The scrim over a
+  photo is a flat colour, never a gradient.
+* **The bottom bar** — four tabs around the indigo circle that opens the "add
+  something" sheet: become a local, places locals love, guide picks, catalog
+  (`lib/widgets/app_bottom_nav.dart`).
 
 ## Design files
 
@@ -277,12 +312,17 @@ lib/
 ├── core/          app_theme.dart — colours, spacing, text styles
 ├── models/        guide.dart, review.dart, tour.dart, local_person.dart,
 │                  spot.dart, catalog_item.dart, cart_item.dart
-├── data/          mock_tours.dart, mock_locals.dart, catalog_seed.dart —
-│                  demo data, replaced by a REST API later
+├── data/          local_store.dart — SharedPreferences, opened in main()
+│                  api_client.dart — JSON over HTTP, errors already in English
+│                  localeyes_api.dart — every call to our own backend
+│                  route_api.dart, store_api.dart — the two public APIs
 ├── state/         app_state.dart — saved tours and locals (AppScope)
 │                  cart_provider.dart — the cart (ChangeNotifier + provider)
+│                  data_store.dart — what the server answered, in memory
+│                  settings_controller.dart — theme and name, from the phone
+│                  notes_controller.dart — the notes list, JSON on the phone
 ├── screens/       home_shell, discovery, tour_detail, saved, cart, profile,
-│                  register, locals, local_profile, meetup_request, spots,
+│                  auth_gate, auth, locals, local_profile, meetup_request, spots,
 │                  become_local, catalog
 └── widgets/       tour_card, cover_header, booking_bar, bookmark_badge,
                    tag_chip, rating_stars, fact_tile, guide_strip,
@@ -293,22 +333,138 @@ lib/
 ```
 
 ```
+server/
+├── src/models/    tour.js, local_person.js, spot.js, catalog_item.js,
+│                  taxonomy.js, meetup_request.js — the Mongoose schemas
+├── src/routes/    tours.js, locals.js, spots.js, catalog.js, taxonomy.js
+├── src/seed.js    loads seed/*.json into MongoDB
+└── seed/          the demo data as JSON — the Milestone 1 Dart files,
+                   exported once and now the source the database is loaded from
+```
+
+```
 design/figma/      00-ui-kit, 01-explore, 02-tour-detail, 03-profile  (SVG)
 docs/screenshots/  simulator screenshots used in this README
 ```
 
+## Accounts
+
+Nobody sees a tour before they have an account. `AuthGate` is the first thing
+`main.dart` builds: it asks the server whether the token kept on the device is
+still good (`GET /api/auth/me`) and then shows either the app or
+`AuthScreen` — the sign-in form on a device that has had an account, the
+sign-up form on a fresh install. "Log out" on the profile clears the token and
+the same switch flips back, with no navigation of its own.
+
+| Endpoint | What it does |
+| --- | --- |
+| `POST /api/auth/register` | one account per email — a taken one comes back as `409 email_taken` |
+| `POST /api/auth/login` | the same answer for an unknown email and a wrong password, so the endpoint does not leak who is registered |
+| `GET /api/auth/me` | is this token still good? |
+
+Passwords are stored as a bcrypt hash and never leave the server; the app
+keeps only the JWT, in `SharedPreferences`. When the server answers
+`email_taken` the sign-up form switches itself to "Sign in" with the email
+still in the field — there is nothing left to create.
+
+## What the phone keeps (offline storage)
+
+Three things live on the device itself, in `SharedPreferences`, and survive
+the app being force-quit:
+
+| Key | What it is |
+| --- | --- |
+| `app_theme_dark_mode` | the dark-mode switch — `bool`, absent means "follow the phone" |
+| `user_display_name` | the name on the profile, read back as `Guest User` when nothing was saved |
+| `trip_notes` | the whole notes list as one JSON string |
+
+`main()` is `async`: it calls `WidgetsFlutterBinding.ensureInitialized()` and
+`await LocalStore.init()` **before** `runApp`, so the saved appearance is
+known when the first frame is painted. Reading it after `runApp` would show
+one light frame and then repaint dark — the flicker everybody notices on a
+cold start. Because the store is already open, every later read is
+synchronous and no screen needs a `FutureBuilder`.
+
+Notes are a domain model with `toJson()` / `NoteItem.fromJson()`
+(`lib/models/note_item.dart`). `NotesController` keeps them newest-first, and
+after every add, toggle and delete it writes the whole list back with one
+`jsonEncode` + `setString` — a handful of notes that are always read together
+are cheaper, and atomic, as one value rather than a key per note. A
+half-written or hand-edited file reads back as an empty list instead of
+crashing the screen.
+
+**Cold restart test.** Add two notes, turn dark mode on, swipe the app away in
+the app switcher, open it again: the theme, the name and both notes are there
+on the first frame.
+
+**Why this is not a safe place for secrets.** `SharedPreferences` is a plain
+`.plist` on iOS and an XML file on Android, inside the app sandbox but not
+encrypted — anyone with a jailbroken or rooted device, or a file-system
+backup, can read it. It is the right place for preferences and a cache, and
+the wrong place for a password or a token. The session token sits there today
+(`auth.token`); the iOS Keychain / Android Keystore, through
+`flutter_secure_storage`, is where it belongs before this ships.
+
+## The backend
+
+`server/` is a small Node + Express API over MongoDB. Five collections —
+tours, locals, spots, catalog, taxonomy — plus the meetup requests the form
+sends.
+
+| Endpoint | What it answers |
+| --- | --- |
+| `GET /api/tours?category=&q=` | the feed, filtered server-side |
+| `GET /api/tours/:id` | one tour with its guide, route, facts and reviews |
+| `GET /api/locals?availability=&area=&interest=` | the people who live here |
+| `POST /api/locals/:id/meetups` | what the meetup form sends |
+| `GET /api/spots` | the pins on the map |
+| `GET /api/catalog`, `POST`, `POST /reset`, `DELETE /:id` | the catalog and its gestures |
+| `GET /api/taxonomy` | categories, interests, areas, meeting places |
+
+The guide rides inside the tour document: every screen that shows a tour also
+shows its guide, so one read answers the whole detail screen.
+
+On the app side the data arrives through `ApiClient` → `LocalEyesApi` →
+`DataStore`. `StartupGate` makes that one request round at launch and shows a
+spinner, or the error with a Retry button if the server is not up; after that
+every screen reads the lists synchronously, the way it used to read the mock
+files.
+
 ## Run it
 
 ```bash
+# 1 — MongoDB on the default port
+mongod --dbpath ~/mongodb-data/db
+
+# 2 — the API, seeded once
+cd server
+npm install
+cp .env.example .env
+npm run seed
+npm start          # http://localhost:3000
+
+# 3 — the app
 flutter pub get
 flutter run
 ```
 
-Tested with Flutter 3.47.2 (Dart 3.13.2) on the iOS Simulator.
+The iOS simulator reaches the laptop on `localhost`. An Android emulator or a
+real phone needs the host spelled out:
+
+```bash
+flutter run --dart-define=API_BASE_URL=http://10.0.2.2:3000/api
+```
+
+Tested with Flutter 3.47.2 (Dart 3.13.2) on the iOS Simulator, Node 22 and
+MongoDB 8.
+
+Widget tests never touch the network: `test/fixtures/fake_server.dart` answers
+the same endpoints from `server/seed/`, so the fixtures cannot drift away from
+what the app really receives.
 
 ## Roadmap
 
-* **Milestone 2** — REST API, real guide and tour data, chat.
+* **Milestone 2** — REST API over MongoDB ✅, chat and real accounts next.
 * **Milestone 3** — local database, BLoC architecture, AI matching.
 
 

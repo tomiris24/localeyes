@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
-import '../data/mock_locals.dart';
 import '../models/local_person.dart';
 import '../models/spot.dart';
 import '../state/app_state.dart';
+import '../state/data_store.dart';
 import '../widgets/avatar_circle.dart';
 import '../widgets/availability_pill.dart';
 import '../widgets/hangout_row.dart';
@@ -34,7 +34,7 @@ class LocalProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final AppState app = AppScope.of(context);
     final TextTheme text = Theme.of(context).textTheme;
-    final List<Spot> theirSpots = MockLocals.spotsBy(person.id);
+    final List<Spot> theirSpots = DataStore.instance.spotsBy(person.id);
     final bool pending = app.hasPendingMeetupWith(person.id);
 
     return Scaffold(
@@ -126,7 +126,9 @@ class LocalProfileScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.xl),
 
               if (theirSpots.isNotEmpty) ...<Widget>[
-                SectionHeader(title: '${person.name.split(' ').first}\'s places'),
+                SectionHeader(
+                  title: '${person.name.split(' ').first}\'s places',
+                ),
                 const SizedBox(height: AppSpacing.md),
                 for (final Spot spot in theirSpots)
                   Padding(
@@ -170,9 +172,9 @@ class _Header extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: AppRadius.cardAll,
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,20 +224,17 @@ class _Header extends StatelessWidget {
             runSpacing: AppSpacing.sm,
             children: <Widget>[
               _Stat(value: '${person.meetCount}', label: 'people met'),
-              _Stat(
-                value: person.rating.toStringAsFixed(1),
-                label: 'out of 5',
-              ),
+              _Stat(value: person.rating.toStringAsFixed(1), label: 'out of 5'),
               _Stat(value: person.memberSince, label: 'here since'),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
           Row(
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.schedule_rounded,
                 size: 14,
-                color: AppColors.inkMuted,
+                color: context.palette.inkMuted,
               ),
               const SizedBox(width: 5),
               Expanded(
@@ -268,17 +267,17 @@ class _Stat extends StatelessWidget {
           value,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 15.5,
             fontWeight: FontWeight.w700,
-            color: AppColors.ink,
+            color: context.palette.ink,
           ),
         ),
         Text(
           label,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontSize: 11.5, color: AppColors.inkMuted),
+          style: TextStyle(fontSize: 11.5, color: context.palette.inkMuted),
         ),
       ],
     );
@@ -299,16 +298,16 @@ class _CostCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: AppColors.brandTint,
+        color: context.palette.brandTint,
         borderRadius: AppRadius.cardAll,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Icon(
+          Icon(
             Icons.payments_outlined,
             size: 20,
-            color: AppColors.brandDeep,
+            color: context.palette.brandDeep,
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -318,13 +317,15 @@ class _CostCard extends StatelessWidget {
                 Text(
                   person.costLabel,
                   style: text.titleMedium?.copyWith(
-                    color: AppColors.brandDeep,
+                    color: context.palette.brandDeep,
                   ),
                 ),
                 const SizedBox(height: 3),
                 Text(
                   person.costNote,
-                  style: text.bodySmall?.copyWith(color: AppColors.brandDeep),
+                  style: text.bodySmall?.copyWith(
+                    color: context.palette.brandDeep,
+                  ),
                 ),
               ],
             ),
@@ -345,18 +346,14 @@ class _SafetyCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: AppRadius.cardAll,
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Icon(
-            Icons.shield_outlined,
-            size: 20,
-            color: AppColors.success,
-          ),
+          Icon(Icons.shield_outlined, size: 20, color: context.palette.success),
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
@@ -397,9 +394,9 @@ class _MeetBar extends StatelessWidget {
     final TextTheme text = Theme.of(context).textTheme;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.line)),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        border: Border(top: BorderSide(color: context.palette.line)),
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: Color(0x14000000),

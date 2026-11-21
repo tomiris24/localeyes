@@ -31,7 +31,7 @@ class LocalCard extends StatelessWidget {
     final TextTheme text = Theme.of(context).textTheme;
 
     return Material(
-      color: Colors.white,
+      color: context.palette.surface,
       borderRadius: AppRadius.cardAll,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -63,10 +63,10 @@ class LocalCard extends StatelessWidget {
                         const SizedBox(height: 2),
                         Row(
                           children: <Widget>[
-                            const Icon(
+                            Icon(
                               Icons.place_outlined,
                               size: 13,
-                              color: AppColors.inkMuted,
+                              color: context.palette.inkMuted,
                             ),
                             const SizedBox(width: 3),
                             Expanded(
@@ -89,13 +89,17 @@ class LocalCard extends StatelessWidget {
                   IconButton(
                     onPressed: onToggleSaved,
                     visualDensity: VisualDensity.compact,
-                    tooltip: isSaved ? 'Remove from my people' : 'Keep for later',
+                    tooltip: isSaved
+                        ? 'Remove from my people'
+                        : 'Keep for later',
                     icon: Icon(
                       isSaved
                           ? Icons.favorite_rounded
                           : Icons.favorite_border_rounded,
                       size: 22,
-                      color: isSaved ? AppColors.brand : AppColors.inkMuted,
+                      color: isSaved
+                          ? context.palette.brand
+                          : context.palette.inkMuted,
                     ),
                   ),
                 ],
@@ -127,10 +131,10 @@ class LocalCard extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Row(
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.auto_awesome_rounded,
                     size: 14,
-                    color: AppColors.brand,
+                    color: context.palette.brand,
                   ),
                   const SizedBox(width: 5),
                   Expanded(
@@ -138,10 +142,10 @@ class LocalCard extends StatelessWidget {
                       matchNote,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.brand,
+                        color: context.palette.brand,
                       ),
                     ),
                   ),
@@ -179,23 +183,23 @@ class _MiniTag extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
         decoration: BoxDecoration(
-          color: AppColors.canvas,
+          color: context.palette.canvas,
           borderRadius: AppRadius.pillAll,
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Icon(icon, size: 13, color: AppColors.inkMuted),
+            Icon(icon, size: 13, color: context.palette.inkMuted),
             const SizedBox(width: 5),
             Flexible(
               child: Text(
                 label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.brandDeep,
+                  color: context.palette.brandDeep,
                 ),
               ),
             ),

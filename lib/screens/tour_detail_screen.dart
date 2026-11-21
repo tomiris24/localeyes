@@ -265,7 +265,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
             children: <Widget>[
               Text(
                 '\$${_tour.pricePerPerson.toStringAsFixed(0)}',
-                style: text.headlineSmall?.copyWith(color: AppColors.brand),
+                style: text.headlineSmall?.copyWith(
+                  color: context.palette.brand,
+                ),
               ),
               Text('per person', style: text.bodySmall),
             ],
@@ -353,8 +355,8 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
   Widget _buildTabBar(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(4),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: context.palette.surface,
         borderRadius: AppRadius.buttonAll,
       ),
       child: Row(
@@ -370,7 +372,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                 curve: Curves.easeOut,
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: selected ? Colors.white : Colors.transparent,
+                  color: selected
+                      ? context.palette.surfaceHigh
+                      : Colors.transparent,
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
                   // One soft shadow lifts the selected tab off the track.
                   boxShadow: selected
@@ -391,7 +395,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                    color: selected ? AppColors.ink : AppColors.inkMuted,
+                    color: selected
+                        ? context.palette.ink
+                        : context.palette.inkMuted,
                   ),
                 ),
               ),
@@ -430,10 +436,10 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.check_circle_rounded,
                   size: 17,
-                  color: AppColors.success,
+                  color: context.palette.success,
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(child: Text(item, style: text.bodyMedium)),
@@ -444,16 +450,16 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
         Container(
           padding: const EdgeInsets.all(AppSpacing.md),
           decoration: BoxDecoration(
-            color: AppColors.success.withValues(alpha: 0.08),
+            color: context.palette.success.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.shield_outlined,
                 size: 18,
-                color: AppColors.success,
+                color: context.palette.success,
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
@@ -488,7 +494,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                   _tour.route[i].time,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: text.titleSmall?.copyWith(color: AppColors.brand),
+                  style: text.titleSmall?.copyWith(
+                    color: context.palette.brand,
+                  ),
                 ),
               ),
               Column(
@@ -497,13 +505,17 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
                     width: 10,
                     height: 10,
                     margin: const EdgeInsets.only(top: 4),
-                    decoration: const BoxDecoration(
-                      color: AppColors.brand,
+                    decoration: BoxDecoration(
+                      color: context.palette.brand,
                       shape: BoxShape.circle,
                     ),
                   ),
                   if (i != _tour.route.length - 1)
-                    Container(width: 2, height: 46, color: AppColors.line),
+                    Container(
+                      width: 2,
+                      height: 46,
+                      color: context.palette.line,
+                    ),
                 ],
               ),
               const SizedBox(width: AppSpacing.md),
@@ -538,9 +550,9 @@ class _TourDetailScreenState extends State<TourDetailScreen> {
             margin: const EdgeInsets.only(bottom: AppSpacing.md),
             padding: const EdgeInsets.all(AppSpacing.lg),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: context.palette.surface,
               borderRadius: AppRadius.cardAll,
-              border: Border.all(color: AppColors.line),
+              border: Border.all(color: context.palette.line),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -697,7 +709,7 @@ class _DateChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: selected ? AppColors.brand : Colors.white,
+      color: selected ? context.palette.brandDeep : context.palette.surfaceHigh,
       borderRadius: AppRadius.pillAll,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
@@ -710,7 +722,7 @@ class _DateChip extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: AppRadius.pillAll,
             border: Border.all(
-              color: selected ? AppColors.brand : AppColors.line,
+              color: selected ? context.palette.brand : context.palette.line,
             ),
           ),
           child: Text(
@@ -720,7 +732,7 @@ class _DateChip extends StatelessWidget {
             style: TextStyle(
               fontSize: 13.5,
               fontWeight: FontWeight.w600,
-              color: selected ? Colors.white : AppColors.ink,
+              color: selected ? Colors.white : context.palette.ink,
             ),
           ),
         ),

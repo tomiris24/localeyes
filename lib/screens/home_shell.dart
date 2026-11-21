@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
+import '../widgets/app_bottom_nav.dart';
+import 'become_local_screen.dart';
+import 'catalog_screen.dart';
 import 'discovery_screen.dart';
 import 'locals_screen.dart';
 import 'map_screen.dart';
 import 'profile_screen.dart';
+import 'spots_screen.dart';
+import 'store_screen.dart';
+import 'trip_notes_screen.dart';
 
-/// Root screen of the app: four tabs inside a [BottomNavigationBar].
+/// Root screen of the app: four tabs around the centre action, in
+/// [AppBottomNav].
 ///
 ///  * Tab 1 — [DiscoveryScreen]: the feed of tours, the cart badge and the
 ///    "add to cart" toggles.
@@ -38,6 +45,61 @@ class _HomeShellState extends State<HomeShell> {
 
   void _selectTab(int index) => setState(() => _index = index);
 
+  /// The violet circle in the middle of the bar. Everything it offers is
+  /// something you add to the app rather than something you browse, which is
+  /// why these four live here and not in a tab.
+  void _openCreateSheet() {
+    showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (BuildContext sheetContext) => SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            _CreateAction(
+              icon: Icons.waving_hand_rounded,
+              title: 'Become a local',
+              subtitle: 'Show travellers your own city',
+              onTap: () => _push(sheetContext, const BecomeLocalScreen()),
+            ),
+            _CreateAction(
+              icon: Icons.place_outlined,
+              title: 'Places locals love',
+              subtitle: 'The spots people added themselves',
+              onTap: () => _push(sheetContext, const SpotsScreen()),
+            ),
+            _CreateAction(
+              icon: Icons.storefront_rounded,
+              title: 'Guide picks',
+              subtitle: 'Kit the guides suggest for their tours',
+              onTap: () => _push(sheetContext, const StoreScreen()),
+            ),
+            _CreateAction(
+              icon: Icons.checklist_rounded,
+              title: 'Trip notes',
+              subtitle: 'Your own list, kept on this phone',
+              onTap: () => _push(sheetContext, const TripNotesScreen()),
+            ),
+            _CreateAction(
+              icon: Icons.grid_view_rounded,
+              title: 'Catalog',
+              subtitle: 'Every tour as a list or a grid',
+              onTap: () => _push(sheetContext, const CatalogScreen()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _push(BuildContext sheetContext, Widget screen) {
+    Navigator.of(sheetContext).pop();
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (BuildContext context) => screen));
+  }
+
   @override
   Widget build(BuildContext context) {
     return HomeTabs(
@@ -54,38 +116,32 @@ class _HomeShellState extends State<HomeShell> {
             LocalsScreen(),
           ],
         ),
-        bottomNavigationBar: DecoratedBox(
-          // A thin line separates the white bar from the canvas background.
-          decoration: const BoxDecoration(
-            border: Border(top: BorderSide(color: AppColors.line)),
-          ),
-          child: BottomNavigationBar(
-            currentIndex: _index,
-            onTap: _selectTab,
-            type: BottomNavigationBarType.fixed,
-            items: const <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                icon: Icon(Icons.explore_outlined),
-                activeIcon: Icon(Icons.explore_rounded),
-                label: 'Explore',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.map_outlined),
-                activeIcon: Icon(Icons.map_rounded),
-                label: 'Map',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline_rounded),
-                activeIcon: Icon(Icons.person_rounded),
-                label: 'Profile',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.people_outline_rounded),
-                activeIcon: Icon(Icons.people_rounded),
-                label: 'Locals',
-              ),
-            ],
-          ),
+        bottomNavigationBar: AppBottomNav(
+          index: _index,
+          onSelect: _selectTab,
+          onCreate: _openCreateSheet,
+          destinations: const <NavDestination>[
+            NavDestination(
+              label: 'Explore',
+              icon: Icons.explore_outlined,
+              activeIcon: Icons.explore_rounded,
+            ),
+            NavDestination(
+              label: 'Map',
+              icon: Icons.map_outlined,
+              activeIcon: Icons.map_rounded,
+            ),
+            NavDestination(
+              label: 'Profile',
+              icon: Icons.person_outline_rounded,
+              activeIcon: Icons.person_rounded,
+            ),
+            NavDestination(
+              label: 'Locals',
+              icon: Icons.people_outline_rounded,
+              activeIcon: Icons.people_rounded,
+            ),
+          ],
         ),
       ),
     );
@@ -110,4 +166,36 @@ class HomeTabs extends InheritedWidget {
   @override
   bool updateShouldNotify(HomeTabs oldWidget) =>
       openExplore != oldWidget.openExplore;
+}
+
+/// One row of the sheet behind the centre button.
+class _CreateAction extends StatelessWidget {
+  const _CreateAction({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      onTap: onTap,
+      leading: CircleAvatar(
+        backgroundColor: context.palette.brandTint,
+        child: Icon(icon, color: context.palette.brand, size: 20),
+      ),
+      title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+      subtitle: Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: context.palette.inkMuted,
+      ),
+    );
+  }
 }

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../data/mock_locals.dart';
-import '../data/mock_tours.dart';
 import '../models/local_person.dart';
 import '../models/tour.dart';
+import 'data_store.dart';
 
 /// Where a meetup request stands. A local is a person with a job, not a
 /// business, so "declined" is a normal outcome and the UI says so plainly.
@@ -37,7 +36,7 @@ class MeetupRequest {
   final String message;
   final MeetupStatus status;
 
-  LocalPerson get local => MockLocals.byId(localId);
+  LocalPerson get local => DataStore.instance.localById(localId);
 }
 
 /// App-wide state shared by every screen: saved tours, saved locals and
@@ -64,8 +63,9 @@ class AppState extends ChangeNotifier {
 
   Set<String> get savedIds => Set<String>.unmodifiable(_savedIds);
 
-  List<Tour> get savedTours =>
-      MockData.tours.where((Tour t) => _savedIds.contains(t.id)).toList();
+  List<Tour> get savedTours => DataStore.instance.tours
+      .where((Tour t) => _savedIds.contains(t.id))
+      .toList();
 
   bool isSaved(String tourId) => _savedIds.contains(tourId);
 
@@ -87,7 +87,7 @@ class AppState extends ChangeNotifier {
   Set<String> get myInterests => Set<String>.unmodifiable(_myInterests);
   List<MeetupRequest> get meetups => List<MeetupRequest>.unmodifiable(_meetups);
 
-  List<LocalPerson> get savedLocals => MockLocals.people
+  List<LocalPerson> get savedLocals => DataStore.instance.people
       .where((LocalPerson p) => _savedLocalIds.contains(p.id))
       .toList();
 

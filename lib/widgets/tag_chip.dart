@@ -25,16 +25,20 @@ class TagChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (Color background, Color foreground, Border? border) = switch (tone) {
-      ChipTone.soft => (AppColors.brandTint, AppColors.brandDeep, null),
+      ChipTone.soft => (context.palette.brandTint, context.palette.brand, null),
       ChipTone.outline => (
-        Colors.white,
-        AppColors.inkMuted,
-        Border.all(color: AppColors.line),
+        context.palette.surfaceHigh,
+        context.palette.inkMuted,
+        Border.all(color: context.palette.line),
       ),
-      ChipTone.dark => (Colors.black.withValues(alpha: 0.55), Colors.white, null),
+      ChipTone.dark => (
+        Colors.black.withValues(alpha: 0.55),
+        Colors.white,
+        null,
+      ),
       ChipTone.success => (
-        AppColors.success.withValues(alpha: 0.12),
-        AppColors.success,
+        context.palette.success.withValues(alpha: 0.12),
+        context.palette.success,
         null,
       ),
     };

@@ -1,3 +1,5 @@
+import 'json.dart';
+
 /// How soon a local is around for a meetup.
 ///
 /// This is the first thing a traveller looks at, so it is a real field on the
@@ -52,6 +54,11 @@ extension HangoutKindLabel on HangoutKind {
 class LanguageSkill {
   const LanguageSkill({required this.language, required this.level});
 
+  factory LanguageSkill.fromJson(Map<String, dynamic> json) => LanguageSkill(
+    language: asString(json['language']),
+    level: asString(json['level']),
+  );
+
   final String language;
   final String level;
 
@@ -61,6 +68,11 @@ class LanguageSkill {
 /// Something a local offers to do, in their own words.
 class HangoutIdea {
   const HangoutIdea({required this.kind, required this.note});
+
+  factory HangoutIdea.fromJson(Map<String, dynamic> json) => HangoutIdea(
+    kind: asEnum(json['kind'], HangoutKind.values, HangoutKind.coffee),
+    note: asString(json['note']),
+  );
 
   final HangoutKind kind;
 
@@ -97,6 +109,34 @@ class LocalPerson {
     this.hourlyRate = 0,
     this.isPhoneVerified = true,
   });
+
+  factory LocalPerson.fromJson(Map<String, dynamic> json) => LocalPerson(
+    id: asString(json['id']),
+    name: asString(json['name'], 'A local'),
+    age: asInt(json['age']),
+    neighbourhood: asString(json['neighbourhood']),
+    oneLiner: asString(json['oneLiner']),
+    bio: asString(json['bio']),
+    languages: asObjectList(json['languages'])
+        .map(LanguageSkill.fromJson)
+        .toList(),
+    interests: asStringList(json['interests']),
+    hangouts: asObjectList(json['hangouts']).map(HangoutIdea.fromJson).toList(),
+    availability: asEnum(
+      json['availability'],
+      Availability.values,
+      Availability.laterOn,
+    ),
+    usualTimes: asString(json['usualTimes']),
+    cost: asEnum(json['cost'], MeetupCost.values, MeetupCost.free),
+    hourlyRate: asDouble(json['hourlyRate']),
+    meetCount: asInt(json['meetCount']),
+    rating: asDouble(json['rating']),
+    responseTime: asString(json['responseTime']),
+    memberSince: asString(json['memberSince']),
+    favouriteSpotIds: asStringList(json['favouriteSpotIds']),
+    isPhoneVerified: asBool(json['isPhoneVerified'], true),
+  );
 
   final String id;
   final String name;
@@ -150,7 +190,9 @@ class LocalPerson {
         .where((String i) => travellerInterests.contains(i))
         .toList();
     if (shared.isEmpty) return 'New to you — different interests, same city';
-    if (shared.length == 1) return 'You both like ${shared.first.toLowerCase()}';
+    if (shared.length == 1) {
+      return 'You both like ${shared.first.toLowerCase()}';
+    }
     return 'You both like ${shared.take(2).map((String s) => s.toLowerCase()).join(' and ')}';
   }
 }

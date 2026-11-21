@@ -8,7 +8,7 @@ import '../models/product.dart';
 Future<void> showProductShareSheet(BuildContext context, Product product) {
   return showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    backgroundColor: context.palette.surface,
     showDragHandle: true,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: AppRadius.card),
@@ -61,9 +61,9 @@ class _ShareSheet extends StatelessWidget {
             Container(
               padding: const EdgeInsets.fromLTRB(AppSpacing.md, 4, 4, 4),
               decoration: BoxDecoration(
-                color: AppColors.canvas,
+                color: context.palette.canvas,
                 borderRadius: AppRadius.pillAll,
-                border: Border.all(color: AppColors.line),
+                border: Border.all(color: context.palette.line),
               ),
               child: Row(
                 children: <Widget>[
@@ -72,20 +72,20 @@ class _ShareSheet extends StatelessWidget {
                       product.deepLink,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13.5,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.ink,
+                        color: context.palette.ink,
                       ),
                     ),
                   ),
                   IconButton(
                     onPressed: () => _copy(context),
                     tooltip: 'Copy link',
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.copy_rounded,
                       size: 20,
-                      color: AppColors.brand,
+                      color: context.palette.brand,
                     ),
                   ),
                 ],

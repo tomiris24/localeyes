@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 import '../core/app_theme.dart';
-import '../data/mock_tours.dart';
 import '../models/tour.dart';
 import '../state/app_state.dart';
+import '../state/data_store.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/cart_badge_button.dart';
 import '../widgets/match_sheet.dart';
+import '../widgets/photo_header.dart';
 import '../widgets/section_header.dart';
 import '../widgets/tour_card.dart';
 import 'cart_screen.dart';
@@ -36,7 +37,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
   }
 
   List<Tour> get _results {
-    return MockData.tours.where((Tour tour) {
+    return DataStore.instance.tours.where((Tour tour) {
       final bool byCategory = _category == 'All' || tour.category == _category;
       final bool byQuery =
           _query.isEmpty ||
@@ -97,6 +98,33 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     final List<Tour> results = _results;
 
     return Scaffold(
+      appBar: PhotoHeader(
+        title: 'Find your local',
+        subtitle: 'Almaty, Kazakhstan',
+        actions: <Widget>[
+          HeaderIconButton(
+            icon: Icons.storefront_rounded,
+            tooltip: 'Guide picks',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (BuildContext context) => const StoreScreen(),
+              ),
+            ),
+          ),
+          // The badge has to keep counting, so this one is the real cart
+          // button rather than a plain icon on the photo.
+          Padding(
+            padding: const EdgeInsets.only(left: AppSpacing.sm),
+            child: CartBadgeButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (BuildContext context) => const CartScreen(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
       body: SafeArea(
         bottom: false,
         child: Center(
@@ -190,6 +218,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
     );
   }
 
+  /// Only the search field now: the screen's name, the city and the two
+  /// actions moved onto the photograph in [PhotoHeader].
   Widget _buildHeader(BuildContext context, AppState app) {
     final TextTheme text = Theme.of(context).textTheme;
 
@@ -200,104 +230,50 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
         AppSpacing.lg,
         0,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        const Icon(
-                          Icons.place_rounded,
-                          size: 15,
-                          color: AppColors.brand,
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Text(
-                            'Almaty, Kazakhstan',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: text.bodySmall,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      'Find your local',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: text.headlineMedium,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppSpacing.md),
-              // Opens the guide picks, which load over the network.
-              IconButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const StoreScreen(),
-                  ),
-                ),
-                tooltip: 'Guide picks',
-                icon: const Icon(Icons.storefront_rounded),
-              ),
-              const SizedBox(width: AppSpacing.xs),
-              CartBadgeButton(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const CartScreen(),
-                  ),
-                ),
-              ),
-            ],
+      child: TextField(
+        controller: _searchController,
+        onChanged: _search,
+        textInputAction: TextInputAction.search,
+        decoration: InputDecoration(
+          hintText: 'Search tours, places, guides',
+          hintStyle: text.bodyMedium,
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: context.palette.inkMuted,
           ),
-          const SizedBox(height: AppSpacing.lg),
-          TextField(
-            controller: _searchController,
-            onChanged: _search,
-            textInputAction: TextInputAction.search,
-            decoration: InputDecoration(
-              hintText: 'Search tours, places, guides',
-              hintStyle: text.bodyMedium,
-              prefixIcon: const Icon(
-                Icons.search_rounded,
-                color: AppColors.inkMuted,
-              ),
-              suffixIcon: _query.isEmpty
-                  ? null
-                  : IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 20),
-                      onPressed: () {
-                        _searchController.clear();
-                        _search('');
-                      },
-                    ),
-              filled: true,
-              fillColor: Colors.white,
-              contentPadding: const EdgeInsets.symmetric(vertical: 14),
-              border: const OutlineInputBorder(
-                borderRadius: AppRadius.pillAll,
-                borderSide: BorderSide.none,
-              ),
-              enabledBorder: const OutlineInputBorder(
-                borderRadius: AppRadius.pillAll,
-                borderSide: BorderSide.none,
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: AppRadius.pillAll,
-                borderSide: const BorderSide(color: AppColors.brand),
-              ),
-            ),
+          suffixIcon: _query.isEmpty
+              ? IconButton(
+                  tooltip: 'Match me with a tour',
+                  icon: Icon(
+                    Icons.tune_rounded,
+                    size: 20,
+                    color: context.palette.brand,
+                  ),
+                  onPressed: _openMatchSheet,
+                )
+              : IconButton(
+                  icon: const Icon(Icons.close_rounded, size: 20),
+                  onPressed: () {
+                    _searchController.clear();
+                    _search('');
+                  },
+                ),
+          filled: true,
+          fillColor: context.palette.surfaceHigh,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          border: const OutlineInputBorder(
+            borderRadius: AppRadius.pillAll,
+            borderSide: BorderSide.none,
           ),
-        ],
+          enabledBorder: const OutlineInputBorder(
+            borderRadius: AppRadius.pillAll,
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: AppRadius.pillAll,
+            borderSide: BorderSide(color: context.palette.brand),
+          ),
+        ),
       ),
     );
   }
@@ -313,10 +289,10 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
           AppSpacing.lg,
           0,
         ),
-        itemCount: MockData.categories.length,
+        itemCount: DataStore.instance.categories.length,
         separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
         itemBuilder: (BuildContext context, int index) {
-          final String category = MockData.categories[index];
+          final String category = DataStore.instance.categories[index];
           final bool selected = category == _category;
           return GestureDetector(
             onTap: () => _selectCategory(category),
@@ -324,7 +300,9 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               decoration: BoxDecoration(
-                color: selected ? AppColors.brand : Colors.transparent,
+                color: selected
+                    ? context.palette.brandDeep
+                    : context.palette.surfaceHigh,
                 borderRadius: AppRadius.pillAll,
               ),
               child: Text(
@@ -332,7 +310,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                 style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                  color: selected ? Colors.white : AppColors.inkMuted,
+                  color: selected ? Colors.white : context.palette.ink,
                 ),
               ),
             ),
@@ -352,8 +330,8 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
       ),
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        decoration: const BoxDecoration(
-          color: Colors.white,
+        decoration: BoxDecoration(
+          color: context.palette.surface,
           borderRadius: AppRadius.cardAll,
         ),
         child: Row(
@@ -380,7 +358,7 @@ class _DiscoveryScreenState extends State<DiscoveryScreen> {
                   TextButton(
                     onPressed: _openMatchSheet,
                     style: TextButton.styleFrom(
-                      foregroundColor: AppColors.brand,
+                      foregroundColor: context.palette.brand,
                       padding: EdgeInsets.zero,
                       minimumSize: const Size(0, 32),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,

@@ -1,15 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:localeyes/screens/register_screen.dart';
+import 'package:localeyes/data/api_client.dart';
+import 'package:localeyes/data/auth_api.dart';
+import 'package:localeyes/models/account.dart';
+import 'package:localeyes/screens/auth_screen.dart';
+import 'package:localeyes/state/auth_controller.dart';
 
-/// Pumps the registration screen on a phone-sized surface.
-Future<void> _pumpForm(WidgetTester tester, {Size size = const Size(390, 844)}) async {
+import 'fixtures/fake_server.dart';
+
+late FakeServer _server;
+late AuthController _auth;
+
+/// Pumps the auth screen on a phone-sized surface, over a fake server.
+Future<void> _pumpForm(
+  WidgetTester tester, {
+  Size size = const Size(390, 844),
+  AuthMode mode = AuthMode.register,
+}) async {
   tester.view.devicePixelRatio = 1.0;
   tester.view.physicalSize = size;
   addTearDown(tester.view.reset);
 
-  await tester.pumpWidget(const MaterialApp(home: RegisterScreen()));
+  await tester.pumpWidget(
+    ChangeNotifierProvider<AuthController>.value(
+      value: _auth,
+      child: MaterialApp(home: AuthScreen(initialMode: mode)),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 
@@ -35,8 +55,14 @@ Future<void> _fill(WidgetTester tester, String label, String value) async {
   await tester.pumpAndSettle();
 }
 
-Future<void> _submit(WidgetTester tester) async {
-  final Finder button = find.widgetWithText(ElevatedButton, 'Create account');
+Future<void> _submit(
+  WidgetTester tester, {
+  String label = 'Create account',
+}) async {
+  final Finder button = find.descendant(
+    of: find.byType(ElevatedButton),
+    matching: find.text(label),
+  );
   await _scrollTo(tester, button);
   await tester.tap(button);
   await tester.pumpAndSettle();
@@ -49,15 +75,6 @@ Future<void> _acceptTerms(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
-/// Finds [text] inside the success dialog only. The same string also sits in
-/// the text field it came from, so a plain find.text would match twice.
-Finder _inDialog(String text) {
-  return find.descendant(
-    of: find.byType(AlertDialog),
-    matching: find.text(text),
-  );
-}
-
 /// Fills every text field with data that passes validation.
 Future<void> _fillValid(WidgetTester tester) async {
   await _fill(tester, 'Full name', 'Tomiris Suleimenova');
@@ -67,6 +84,14 @@ Future<void> _fillValid(WidgetTester tester) async {
 }
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    _server = FakeServer();
+    _auth = AuthController(
+      api: AuthApi(client: ApiClient(client: _server.client())),
+    );
+  });
+
   group('Submit-time validation', () {
     testWidgets('an empty form shows an error under every field', (
       WidgetTester tester,
@@ -78,7 +103,10 @@ void main() {
       expect(find.text('Please enter your email'), findsOneWidget);
       expect(find.text('Please enter a password'), findsOneWidget);
       expect(find.text('Please repeat the password'), findsOneWidget);
-      expect(find.text('You have to accept the terms to register'), findsOneWidget);
+      expect(
+        find.text('You have to accept the terms to register'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('email without @ is rejected', (WidgetTester tester) async {
@@ -118,7 +146,10 @@ void main() {
       await _fill(tester, 'Password', '12345');
       await _submit(tester);
 
-      expect(find.text('Password must be at least 6 characters'), findsOneWidget);
+      expect(
+        find.text('Password must be at least 6 characters'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('passwords that do not match are rejected', (
@@ -141,7 +172,10 @@ void main() {
       await _fillValid(tester);
       await _submit(tester);
 
-      expect(find.text('You have to accept the terms to register'), findsOneWidget);
+      expect(
+        find.text('You have to accept the terms to register'),
+        findsOneWidget,
+      );
       expect(find.text('Account created'), findsNothing);
     });
 
@@ -150,10 +184,16 @@ void main() {
     ) async {
       await _pumpForm(tester);
       await _submit(tester);
-      expect(find.text('You have to accept the terms to register'), findsOneWidget);
+      expect(
+        find.text('You have to accept the terms to register'),
+        findsOneWidget,
+      );
 
       await _acceptTerms(tester);
-      expect(find.text('You have to accept the terms to register'), findsNothing);
+      expect(
+        find.text('You have to accept the terms to register'),
+        findsNothing,
+      );
     });
   });
 
@@ -191,7 +231,7 @@ void main() {
   });
 
   group('Successful registration', () {
-    testWidgets('a complete form shows the success dialog with the data', (
+    testWidgets('a complete form creates the account and signs it in', (
       WidgetTester tester,
     ) async {
       await _pumpForm(tester);
@@ -199,31 +239,13 @@ void main() {
       await _acceptTerms(tester);
       await _submit(tester);
 
-      expect(_inDialog('Account created'), findsOneWidget);
-      expect(_inDialog('Tomiris Suleimenova'), findsOneWidget);
-      expect(_inDialog('tomiris@narxoz.kz'), findsOneWidget);
-      expect(_inDialog('Traveller'), findsOneWidget);
+      expect(_auth.status, AuthStatus.signedIn);
+      expect(_auth.account?.name, 'Tomiris Suleimenova');
+      expect(_auth.account?.email, 'tomiris@narxoz.kz');
+      expect(_auth.account?.role, UserRole.traveller);
     });
 
-    testWidgets('closing the dialog shows the welcome snack bar', (
-      WidgetTester tester,
-    ) async {
-      await _pumpForm(tester);
-      await _fillValid(tester);
-      await _acceptTerms(tester);
-      await _submit(tester);
-
-      await tester.tap(find.widgetWithText(TextButton, 'Done'));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(SnackBar), findsOneWidget);
-      expect(
-        find.text('Welcome to LocalEyes, Tomiris Suleimenova!'),
-        findsOneWidget,
-      );
-    });
-
-    testWidgets('the picked role ends up in the dialog', (
+    testWidgets('the picked role reaches the server', (
       WidgetTester tester,
     ) async {
       await _pumpForm(tester);
@@ -240,7 +262,116 @@ void main() {
 
       await _submit(tester);
 
-      expect(_inDialog('Guide'), findsOneWidget);
+      expect(_auth.account?.role, UserRole.guide);
+    });
+
+    testWidgets('the session survives a restart', (WidgetTester tester) async {
+      await _pumpForm(tester);
+      await _fillValid(tester);
+      await _acceptTerms(tester);
+      await _submit(tester);
+
+      // A second controller over the same storage and the same server: this
+      // is what the app does at launch.
+      final AuthController restarted = AuthController(
+        api: AuthApi(client: ApiClient(client: _server.client())),
+      );
+      await restarted.restore();
+
+      expect(restarted.status, AuthStatus.signedIn);
+      expect(restarted.account?.email, 'tomiris@narxoz.kz');
+    });
+  });
+
+  group('One account per email', () {
+    testWidgets('registering a taken email offers the sign-in form instead', (
+      WidgetTester tester,
+    ) async {
+      _server.addAccount(
+        name: 'Tomiris Suleimenova',
+        email: 'tomiris@narxoz.kz',
+        password: 'secret123',
+      );
+
+      await _pumpForm(tester);
+      await _fillValid(tester);
+      await _acceptTerms(tester);
+      await _submit(tester);
+
+      expect(_auth.status, isNot(AuthStatus.signedIn));
+      expect(
+        find.text(
+          'An account with this email already exists. Sign in instead.',
+        ),
+        findsOneWidget,
+      );
+      // Switched over, with the email still in the field and nothing left to
+      // create: no name, no confirm, no terms.
+      expect(find.widgetWithText(ElevatedButton, 'Sign in'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Full name'), findsNothing);
+      expect(find.byType(Checkbox), findsNothing);
+      expect(find.text('tomiris@narxoz.kz'), findsOneWidget);
+    });
+  });
+
+  group('Signing in', () {
+    testWidgets('the right password signs the account in', (
+      WidgetTester tester,
+    ) async {
+      _server.addAccount(
+        name: 'Tomiris Suleimenova',
+        email: 'tomiris@narxoz.kz',
+        password: 'secret123',
+      );
+
+      await _pumpForm(tester, mode: AuthMode.signIn);
+      await _fill(tester, 'Email', 'tomiris@narxoz.kz');
+      await _fill(tester, 'Password', 'secret123');
+      await _submit(tester, label: 'Sign in');
+
+      expect(_auth.status, AuthStatus.signedIn);
+      expect(_auth.account?.name, 'Tomiris Suleimenova');
+    });
+
+    testWidgets('a wrong password says so and keeps the form', (
+      WidgetTester tester,
+    ) async {
+      _server.addAccount(
+        name: 'Tomiris Suleimenova',
+        email: 'tomiris@narxoz.kz',
+        password: 'secret123',
+      );
+
+      await _pumpForm(tester, mode: AuthMode.signIn);
+      await _fill(tester, 'Email', 'tomiris@narxoz.kz');
+      await _fill(tester, 'Password', 'nope123');
+      await _submit(tester, label: 'Sign in');
+
+      expect(_auth.status, AuthStatus.signedOut);
+      expect(find.text('Wrong email or password'), findsOneWidget);
+    });
+
+    testWidgets('signing out brings the sign-in form back', (
+      WidgetTester tester,
+    ) async {
+      _server.addAccount(
+        name: 'Tomiris Suleimenova',
+        email: 'tomiris@narxoz.kz',
+        password: 'secret123',
+      );
+
+      await _pumpForm(tester, mode: AuthMode.signIn);
+      await _fill(tester, 'Email', 'tomiris@narxoz.kz');
+      await _fill(tester, 'Password', 'secret123');
+      await _submit(tester, label: 'Sign in');
+      expect(_auth.status, AuthStatus.signedIn);
+
+      await _auth.signOut();
+      expect(_auth.status, AuthStatus.signedOut);
+
+      // And the device remembers there is an account, so the next launch
+      // opens on "Sign in" rather than on the sign-up form.
+      expect(_auth.hasAccountOnDevice, isTrue);
     });
   });
 

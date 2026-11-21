@@ -1,9 +1,20 @@
 import 'guide.dart';
+import 'json.dart';
 import 'review.dart';
 
 /// One stop of the route, shown on the "Route" tab of the detail screen.
 class RouteStop {
-  const RouteStop({required this.time, required this.title, required this.note});
+  const RouteStop({
+    required this.time,
+    required this.title,
+    required this.note,
+  });
+
+  factory RouteStop.fromJson(Map<String, dynamic> json) => RouteStop(
+    time: asString(json['time']),
+    title: asString(json['title']),
+    note: asString(json['note']),
+  );
 
   final String time;
   final String title;
@@ -20,6 +31,14 @@ class TourFacts {
     required this.languageLevel,
     required this.meetingPoint,
   });
+
+  factory TourFacts.fromJson(Map<String, dynamic> json) => TourFacts(
+    difficulty: asString(json['difficulty']),
+    walkingTime: asString(json['walkingTime']),
+    groupSize: asString(json['groupSize']),
+    languageLevel: asString(json['languageLevel']),
+    meetingPoint: asString(json['meetingPoint']),
+  );
 
   final String difficulty;
   final String walkingTime;
@@ -51,6 +70,28 @@ class Tour {
     required this.availableDates,
     this.maxGuests = 8,
   });
+
+  factory Tour.fromJson(Map<String, dynamic> json) => Tour(
+    id: asString(json['id']),
+    title: asString(json['title'], 'Untitled tour'),
+    area: asString(json['area']),
+    image: asString(json['image']),
+    imageCredit: asString(json['imageCredit']),
+    category: asString(json['category']),
+    pricePerPerson: asDouble(json['pricePerPerson']),
+    rating: asDouble(json['rating']),
+    reviewCount: asInt(json['reviewCount']),
+    duration: asString(json['duration']),
+    tags: asStringList(json['tags']),
+    summary: asString(json['summary']),
+    included: asStringList(json['included']),
+    route: asObjectList(json['route']).map(RouteStop.fromJson).toList(),
+    facts: TourFacts.fromJson(asObject(json['facts'])),
+    guide: Guide.fromJson(asObject(json['guide'])),
+    reviews: asObjectList(json['reviews']).map(Review.fromJson).toList(),
+    availableDates: asStringList(json['availableDates']),
+    maxGuests: asInt(json['maxGuests'], 8),
+  );
 
   final String id;
   final String title;

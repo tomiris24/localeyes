@@ -62,7 +62,7 @@ class CartToggleButton extends StatelessWidget {
       return OutlinedButton(
         onPressed: onPressed,
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.inkMuted,
+          foregroundColor: context.palette.inkMuted,
           minimumSize: _size,
           padding: _padding,
           textStyle: _label,
@@ -74,8 +74,8 @@ class CartToggleButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: AppColors.brand.withValues(alpha: 0.08),
-        foregroundColor: AppColors.brand,
+        backgroundColor: context.palette.brand.withValues(alpha: 0.08),
+        foregroundColor: context.palette.brand,
         minimumSize: _size,
         padding: _padding,
         textStyle: _label,

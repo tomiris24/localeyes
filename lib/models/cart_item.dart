@@ -1,4 +1,4 @@
-import '../data/mock_tours.dart';
+import '../state/data_store.dart';
 import 'tour.dart';
 
 /// One tour added to the cart, together with the options the traveller picked.
@@ -21,6 +21,6 @@ class CartItem {
   final int guests;
   final String date;
 
-  Tour get tour => MockData.byId(tourId);
+  Tour get tour => DataStore.instance.tourById(tourId);
   double get total => tour.totalFor(guests);
 }

@@ -52,7 +52,7 @@ class SectionHeader extends StatelessWidget {
           TextButton(
             onPressed: onAction,
             style: TextButton.styleFrom(
-              foregroundColor: AppColors.brand,
+              foregroundColor: context.palette.brand,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
             ),
             child: Text(actionLabel!),

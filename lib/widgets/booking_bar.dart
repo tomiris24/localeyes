@@ -28,9 +28,9 @@ class BookingBar extends StatelessWidget {
     final TextTheme text = Theme.of(context).textTheme;
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.line)),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        border: Border(top: BorderSide(color: context.palette.line)),
         boxShadow: <BoxShadow>[
           BoxShadow(
             color: Color(0x14000000),

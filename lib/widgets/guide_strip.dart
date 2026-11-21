@@ -18,9 +18,9 @@ class GuideStrip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: AppRadius.cardAll,
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,10 +62,10 @@ class GuideStrip extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Row(
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.schedule_rounded,
                 size: 15,
-                color: AppColors.inkMuted,
+                color: context.palette.inkMuted,
               ),
               const SizedBox(width: 5),
               Expanded(

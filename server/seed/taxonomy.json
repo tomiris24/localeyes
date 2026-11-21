@@ -1,0 +1,39 @@
+{
+  "tourCategories": [
+    "All",
+    "Mountains",
+    "City walk",
+    "Food",
+    "Culture",
+    "Ski"
+  ],
+  "interests": [
+    "Coffee",
+    "Food markets",
+    "Mountains",
+    "Photography",
+    "Live music",
+    "Architecture",
+    "Street art",
+    "Books",
+    "Football",
+    "Cycling",
+    "History",
+    "Night out"
+  ],
+  "areas": [
+    "All areas",
+    "Medeu",
+    "Almaly",
+    "Bostandyk",
+    "Zhetysu",
+    "Auezov"
+  ],
+  "publicMeetingPlaces": [
+    "Green Bazaar main entrance",
+    "Arbat, by the fountain",
+    "Panfilov Park, east gate",
+    "Abai metro station, surface exit",
+    "Republic Square steps"
+  ]
+}

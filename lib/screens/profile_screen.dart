@@ -1,18 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../core/app_theme.dart';
+import '../models/account.dart';
 import '../state/app_state.dart';
+import '../state/auth_controller.dart';
+import '../state/notes_controller.dart';
+import '../state/settings_controller.dart';
 import '../widgets/avatar_circle.dart';
+import '../widgets/photo_header.dart';
 import '../widgets/section_header.dart';
 import '../widgets/tag_chip.dart';
 import 'become_local_screen.dart';
-import 'register_screen.dart';
 import 'saved_screen.dart';
+import 'trip_notes_screen.dart';
 
 /// Traveller profile. Verification and preferences are what make the
 /// two-sided trust system work for guides as well.
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
+
+  /// Two letters for the avatar, from whatever the traveller called
+  /// themselves on this phone.
+  static String _initials(String name) {
+    final List<String> parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.isEmpty || parts.first.isEmpty) return '?';
+    if (parts.length < 2) return parts.first[0].toUpperCase();
+    return '${parts.first[0]}${parts[1][0]}'.toUpperCase();
+  }
 
   static const List<String> _interests = <String>[
     'Mountains',
@@ -26,17 +41,21 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final AppState app = AppScope.of(context);
+    final AuthController auth = context.watch<AuthController>();
+    final SettingsController settings = context.watch<SettingsController>();
+    final NotesController notes = context.watch<NotesController>();
+    final Account? account = auth.account;
     final TextTheme text = Theme.of(context).textTheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile'), titleSpacing: AppSpacing.lg),
+      appBar: const PhotoHeader(title: 'Profile'),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 720),
           child: ListView(
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
-              0,
+              AppSpacing.lg,
               AppSpacing.lg,
               AppSpacing.xl,
             ),
@@ -44,16 +63,16 @@ class ProfileScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: context.palette.surface,
                   borderRadius: AppRadius.cardAll,
-                  border: Border.all(color: AppColors.line),
+                  border: Border.all(color: context.palette.line),
                 ),
                 child: Column(
                   children: <Widget>[
                     Row(
                       children: <Widget>[
-                        const AvatarCircle(
-                          initials: 'TS',
+                        AvatarCircle(
+                          initials: _initials(settings.displayName),
                           size: 60,
                           isVerified: true,
                         ),
@@ -64,17 +83,38 @@ class ProfileScreen extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Text(
-                                'Tomiris S.',
+                                settings.displayName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: text.titleLarge,
                               ),
+                              if (account != null) ...<Widget>[
+                                const SizedBox(height: 2),
+                                Text(
+                                  account.email,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: text.bodySmall,
+                                ),
+                              ],
                               const SizedBox(height: 4),
-                              const TagChip(
-                                label: 'ID verified',
-                                icon: Icons.verified_user_outlined,
-                                tone: ChipTone.success,
-                                dense: true,
+                              Wrap(
+                                spacing: AppSpacing.xs,
+                                runSpacing: AppSpacing.xs,
+                                children: <Widget>[
+                                  if (account != null)
+                                    TagChip(
+                                      label: account.role.label,
+                                      icon: Icons.badge_outlined,
+                                      dense: true,
+                                    ),
+                                  const TagChip(
+                                    label: 'ID verified',
+                                    icon: Icons.verified_user_outlined,
+                                    tone: ChipTone.success,
+                                    dense: true,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -112,6 +152,28 @@ class ProfileScreen extends StatelessWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: AppSpacing.sm),
+              _MenuTile(
+                icon: Icons.checklist_rounded,
+                title: 'Trip notes',
+                subtitle: notes.notes.isEmpty
+                    ? 'Nothing written down yet'
+                    : '${notes.remaining} left of ${notes.notes.length}',
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) => const TripNotesScreen(),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+              const SectionHeader(
+                title: 'On this phone',
+                subtitle: 'Kept locally, with or without a connection',
+              ),
+              const SizedBox(height: AppSpacing.md),
+              const _AppearanceCard(),
+              const SizedBox(height: AppSpacing.sm),
+              const _DisplayNameCard(),
               const SizedBox(height: AppSpacing.lg),
               const SectionHeader(
                 title: 'What I like',
@@ -171,14 +233,14 @@ class ProfileScreen extends StatelessWidget {
                 label: const Text('Become a local'),
               ),
               const SizedBox(height: AppSpacing.sm),
+              // Signing out is the only account action that belongs here:
+              // this person already has an account, so there is nothing to
+              // create. The sign-in form comes back by itself, because
+              // AuthGate is watching the same controller.
               OutlinedButton.icon(
-                onPressed: () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const RegisterScreen(),
-                  ),
-                ),
-                icon: const Icon(Icons.person_add_alt_rounded, size: 19),
-                label: const Text('Create a new account'),
+                onPressed: auth.signOut,
+                icon: const Icon(Icons.logout_rounded, size: 19),
+                label: const Text('Log out'),
               ),
             ],
           ),
@@ -236,9 +298,9 @@ class _MenuTile extends StatelessWidget {
     final Widget body = Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
       ),
       child: Row(
         children: <Widget>[
@@ -246,11 +308,11 @@ class _MenuTile extends StatelessWidget {
             width: 38,
             height: 38,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
-              color: AppColors.brandTint,
+            decoration: BoxDecoration(
+              color: context.palette.brandTint,
               shape: BoxShape.circle,
             ),
-            child: Icon(icon, size: 19, color: AppColors.brand),
+            child: Icon(icon, size: 19, color: context.palette.brand),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
@@ -273,7 +335,7 @@ class _MenuTile extends StatelessWidget {
               ],
             ),
           ),
-          const Icon(Icons.chevron_right_rounded, color: AppColors.inkMuted),
+          Icon(Icons.chevron_right_rounded, color: context.palette.inkMuted),
         ],
       ),
     );
@@ -287,6 +349,149 @@ class _MenuTile extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
               child: body,
             ),
+    );
+  }
+}
+
+/// The dark-mode switch. The choice is written to the phone immediately, and
+/// `main()` reads it back before the first frame on the next launch — which
+/// is why a dark app opens dark, with no white flash in between.
+class _AppearanceCard extends StatelessWidget {
+  const _AppearanceCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final SettingsController settings = context.watch<SettingsController>();
+    final TextTheme text = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(AppSpacing.lg, 4, AppSpacing.sm, 4),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: context.palette.line),
+      ),
+      child: Row(
+        children: <Widget>[
+          Expanded(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text('Dark mode', style: text.titleSmall),
+                Text(
+                  settings.darkMode == null
+                      ? 'Following your phone'
+                      : 'Saved on this phone',
+                  style: text.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: settings.isDark(context),
+            onChanged: settings.setDarkMode,
+            activeThumbColor: context.palette.brandDeep,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The name shown at the top of this screen. It is a preference, not an
+/// account field: it never leaves the phone, and a fresh install reads back
+/// "Guest User".
+class _DisplayNameCard extends StatefulWidget {
+  const _DisplayNameCard();
+
+  @override
+  State<_DisplayNameCard> createState() => _DisplayNameCardState();
+}
+
+class _DisplayNameCardState extends State<_DisplayNameCard> {
+  late final TextEditingController _controller = TextEditingController(
+    text: context.read<SettingsController>().hasDisplayName
+        ? context.read<SettingsController>().displayName
+        : '',
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final SettingsController settings = context.read<SettingsController>();
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    await settings.setDisplayName(_controller.text);
+    if (!mounted) return;
+    messenger
+      ..clearSnackBars()
+      ..showSnackBar(
+        SnackBar(content: Text('Saved as ${settings.displayName}')),
+      );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final TextTheme text = Theme.of(context).textTheme;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: context.palette.surface,
+        borderRadius: AppRadius.cardAll,
+        border: Border.all(color: context.palette.line),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Text('Display name', style: text.titleSmall),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: <Widget>[
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _save(),
+                  decoration: InputDecoration(
+                    hintText: 'Guest User',
+                    filled: true,
+                    fillColor: context.palette.surfaceHigh,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.lg,
+                      vertical: 12,
+                    ),
+                    border: const OutlineInputBorder(
+                      borderRadius: AppRadius.pillAll,
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: const OutlineInputBorder(
+                      borderRadius: AppRadius.pillAll,
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: AppRadius.pillAll,
+                      borderSide: BorderSide(color: context.palette.brand),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              ElevatedButton(
+                onPressed: _save,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(0, AppSize.buttonMedium),
+                ),
+                child: const Text('Save'),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

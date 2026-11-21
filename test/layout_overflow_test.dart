@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import 'package:localeyes/data/mock_tours.dart';
 import 'package:localeyes/main.dart';
 import 'package:localeyes/models/tour.dart';
 import 'package:localeyes/screens/profile_screen.dart';
 import 'package:localeyes/screens/tour_detail_screen.dart';
 import 'package:localeyes/state/app_state.dart';
 import 'package:localeyes/state/cart_provider.dart';
+import 'package:localeyes/widgets/app_bottom_nav.dart';
 import 'package:localeyes/widgets/tour_card.dart';
+
+import 'fixtures/seed_data.dart';
 
 /// Screen sizes we promise to support: from a small iPhone SE to a desktop window.
 const List<Size> _sizes = <Size>[
@@ -44,10 +46,7 @@ Widget _detail(Tour tour) => ChangeNotifierProvider<CartProvider>(
 /// on the screens themselves, so a bare [find.text] matches two widgets.
 Future<void> _openTab(WidgetTester tester, String label) async {
   await tester.tap(
-    find.descendant(
-      of: find.byType(BottomNavigationBar),
-      matching: find.text(label),
-    ),
+    find.descendant(of: find.byType(AppBottomNav), matching: find.text(label)),
   );
   await tester.pumpAndSettle();
 }
@@ -73,7 +72,23 @@ Future<void> _openSaved(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Taps the first tour card.
+///
+/// The feed opens on a photograph now, so the first card starts below the
+/// fold on a phone: it has to be scrolled into view before it can be tapped.
+Future<void> _tapFirstTour(WidgetTester tester) async {
+  final Finder card = find.byType(TourCard).first;
+  await tester.ensureVisible(card);
+  await tester.pumpAndSettle();
+  await tester.tap(card);
+  await tester.pumpAndSettle();
+}
+
 void main() {
+  setUp(() async {
+    await SeedData.installApp();
+  });
+
   group('No RenderFlex overflow', () {
     for (final Size size in _sizes) {
       testWidgets(
@@ -103,7 +118,7 @@ void main() {
       ) async {
         await _setSize(tester, size);
 
-        for (final Tour tour in MockData.tours) {
+        for (final Tour tour in SeedData.tours) {
           await tester.pumpWidget(_detail(tour));
           await tester.pumpAndSettle();
           expect(tester.takeException(), isNull, reason: tour.title);
@@ -162,7 +177,7 @@ void main() {
       WidgetTester tester,
     ) async {
       await _setSize(tester, const Size(390, 844));
-      final Tour tour = MockData.tours.first;
+      final Tour tour = SeedData.tours.first;
 
       await tester.pumpWidget(_detail(tour));
       await tester.pumpAndSettle();
@@ -190,8 +205,7 @@ void main() {
       await tester.pumpWidget(const LocalEyesApp());
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(TourCard).first);
-      await tester.pumpAndSettle();
+      await _tapFirstTour(tester);
 
       await tester.tap(find.text('Add to cart'));
       await tester.pumpAndSettle();
@@ -215,9 +229,8 @@ void main() {
       expect(find.byType(TourDetailScreen), findsNothing);
 
       // The feed passes the whole Tour object to the pushed screen.
-      final Tour tour = MockData.tours.first;
-      await tester.tap(find.byType(TourCard).first);
-      await tester.pumpAndSettle();
+      final Tour tour = SeedData.tours.first;
+      await _tapFirstTour(tester);
 
       final TourDetailScreen detail = tester.widget<TourDetailScreen>(
         find.byType(TourDetailScreen),
@@ -240,8 +253,7 @@ void main() {
         await tester.pumpWidget(const LocalEyesApp());
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byType(TourCard).first);
-        await tester.pumpAndSettle();
+        await _tapFirstTour(tester);
         expect(find.byType(TourDetailScreen), findsOneWidget, reason: how);
 
         if (how == 'appbar') {
@@ -272,8 +284,7 @@ void main() {
       await tester.enterText(find.byType(TextField).first, 'canyon');
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byType(TourCard).first);
-      await tester.pumpAndSettle();
+      await _tapFirstTour(tester);
       await tester.tap(find.byType(BackButton));
       await tester.pumpAndSettle();
 

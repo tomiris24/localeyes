@@ -139,7 +139,7 @@ class _StoreScreenState extends State<StoreScreen> {
     // Both remaining states sit inside the same RefreshIndicator, so a pull
     // retries the request whether the feed loaded or not.
     return RefreshIndicator(
-      color: AppColors.brand,
+      color: context.palette.brand,
       onRefresh: () => _load(showSpinner: false),
       child: _error != null
           ? _ErrorState(message: _error!, onRetry: () => _load())
@@ -204,7 +204,7 @@ class _ProductList extends StatelessWidget {
         if (index == 0) {
           return Container(
             width: double.infinity,
-            color: Colors.white,
+            color: context.palette.surface,
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.lg,
               AppSpacing.md,
@@ -263,7 +263,9 @@ class _FilterRow extends StatelessWidget {
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
               decoration: BoxDecoration(
-                color: active ? AppColors.brand : Colors.transparent,
+                color: active
+                    ? context.palette.brandDeep
+                    : context.palette.surfaceHigh,
                 borderRadius: AppRadius.pillAll,
               ),
               child: Text(
@@ -271,7 +273,7 @@ class _FilterRow extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13.5,
                   fontWeight: active ? FontWeight.w700 : FontWeight.w500,
-                  color: active ? Colors.white : AppColors.inkMuted,
+                  color: active ? Colors.white : context.palette.ink,
                 ),
               ),
             ),
@@ -312,14 +314,14 @@ class _ErrorState extends StatelessWidget {
                       width: 76,
                       height: 76,
                       alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: AppColors.brandTint,
+                      decoration: BoxDecoration(
+                        color: context.palette.brandTint,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.cloud_off_rounded,
                         size: 34,
-                        color: AppColors.brand,
+                        color: context.palette.brand,
                       ),
                     ),
                     const SizedBox(height: AppSpacing.lg),

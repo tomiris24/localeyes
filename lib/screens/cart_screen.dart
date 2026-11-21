@@ -63,9 +63,9 @@ class CartScreen extends StatelessWidget {
                     return Container(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: context.palette.surface,
                         borderRadius: AppRadius.cardAll,
-                        border: Border.all(color: AppColors.line),
+                        border: Border.all(color: context.palette.line),
                       ),
                       child: Row(
                         children: <Widget>[
@@ -102,7 +102,7 @@ class CartScreen extends StatelessWidget {
                                 Text(
                                   '\$${item.total.toStringAsFixed(0)}',
                                   style: text.titleSmall?.copyWith(
-                                    color: AppColors.brand,
+                                    color: context.palette.brand,
                                   ),
                                 ),
                               ],
@@ -110,9 +110,9 @@ class CartScreen extends StatelessWidget {
                           ),
                           IconButton(
                             tooltip: 'Remove ${item.tour.title}',
-                            icon: const Icon(
+                            icon: Icon(
                               Icons.delete_outline_rounded,
-                              color: AppColors.inkMuted,
+                              color: context.palette.inkMuted,
                             ),
                             // `read`: a callback needs the object, not a
                             // subscription — this screen already watches.

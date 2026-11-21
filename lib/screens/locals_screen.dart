@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
-import '../data/mock_locals.dart';
 import '../models/local_person.dart';
 import '../state/app_state.dart';
+import '../state/data_store.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/local_card.dart';
+import '../widgets/photo_header.dart';
 import 'become_local_screen.dart';
 import 'local_profile_screen.dart';
 import 'spots_screen.dart';
@@ -35,7 +36,9 @@ class _LocalsScreenState extends State<LocalsScreen> {
   }
 
   List<LocalPerson> get _results {
-    final List<LocalPerson> found = MockLocals.people.where((LocalPerson p) {
+    final List<LocalPerson> found = DataStore.instance.people.where((
+      LocalPerson p,
+    ) {
       final bool byQuery =
           _query.isEmpty ||
           p.name.toLowerCase().contains(_query) ||
@@ -100,23 +103,21 @@ class _LocalsScreenState extends State<LocalsScreen> {
   @override
   Widget build(BuildContext context) {
     final AppState app = AppScope.of(context);
-    final TextTheme text = Theme.of(context).textTheme;
     final List<LocalPerson> results = _results;
-    final int freeToday = MockLocals.people
+    final int freeToday = DataStore.instance.people
         .where((LocalPerson p) => p.availability == Availability.today)
         .length;
 
     return Scaffold(
-      appBar: AppBar(
-        titleSpacing: AppSpacing.lg,
-        title: const Text('Meet a local'),
+      appBar: PhotoHeader(
+        title: 'Meet a local',
+        subtitle: '$freeToday people are free today in Almaty.',
         actions: <Widget>[
-          IconButton(
+          HeaderIconButton(
+            icon: Icons.waving_hand_outlined,
             onPressed: _openBecomeLocal,
             tooltip: 'Become a local',
-            icon: const Icon(Icons.waving_hand_outlined),
           ),
-          const SizedBox(width: AppSpacing.sm),
         ],
       ),
       body: Center(
@@ -130,11 +131,7 @@ class _LocalsScreenState extends State<LocalsScreen> {
               AppSpacing.xl,
             ),
             children: <Widget>[
-              Text(
-                '$freeToday people are free today in Almaty.',
-                style: text.bodyMedium,
-              ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.lg),
               TextField(
                 controller: _searchController,
                 onChanged: _search,
@@ -143,22 +140,22 @@ class _LocalsScreenState extends State<LocalsScreen> {
                   hintText: 'Coffee, mountains, a name…',
                   prefixIcon: const Icon(Icons.search_rounded),
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: context.palette.surfaceHigh,
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.lg,
                     vertical: 14,
                   ),
-                  border: const OutlineInputBorder(
+                  border: OutlineInputBorder(
                     borderRadius: AppRadius.pillAll,
-                    borderSide: BorderSide(color: AppColors.line),
+                    borderSide: BorderSide(color: context.palette.line),
                   ),
-                  enabledBorder: const OutlineInputBorder(
+                  enabledBorder: OutlineInputBorder(
                     borderRadius: AppRadius.pillAll,
-                    borderSide: BorderSide(color: AppColors.line),
+                    borderSide: BorderSide(color: context.palette.line),
                   ),
-                  focusedBorder: const OutlineInputBorder(
+                  focusedBorder: OutlineInputBorder(
                     borderRadius: AppRadius.pillAll,
-                    borderSide: BorderSide(color: AppColors.brand),
+                    borderSide: BorderSide(color: context.palette.brand),
                   ),
                 ),
               ),
@@ -166,9 +163,7 @@ class _LocalsScreenState extends State<LocalsScreen> {
               _FilterRow(
                 labels: <String>[
                   'Anyone',
-                  ...Availability.values.map(
-                    (Availability a) => a.shortLabel,
-                  ),
+                  ...Availability.values.map((Availability a) => a.shortLabel),
                 ],
                 selectedIndex: _when == null ? 0 : _when!.index + 1,
                 onSelect: (int index) => _selectWhen(
@@ -177,12 +172,15 @@ class _LocalsScreenState extends State<LocalsScreen> {
               ),
               const SizedBox(height: AppSpacing.sm),
               _FilterRow(
-                labels: <String>['Any interest', ...MockLocals.interests],
+                labels: <String>[
+                  'Any interest',
+                  ...DataStore.instance.interests,
+                ],
                 selectedIndex: _interest == null
                     ? 0
-                    : MockLocals.interests.indexOf(_interest!) + 1,
+                    : DataStore.instance.interests.indexOf(_interest!) + 1,
                 onSelect: (int index) => _selectInterest(
-                  index == 0 ? null : MockLocals.interests[index - 1],
+                  index == 0 ? null : DataStore.instance.interests[index - 1],
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -261,15 +259,15 @@ class _FilterRow extends StatelessWidget {
             selected: selected,
             onSelected: (_) => onSelect(index),
             showCheckmark: false,
-            backgroundColor: Colors.white,
-            selectedColor: AppColors.brand,
+            backgroundColor: context.palette.surfaceHigh,
+            selectedColor: context.palette.brandDeep,
             side: BorderSide(
-              color: selected ? AppColors.brand : AppColors.line,
+              color: selected ? context.palette.brand : context.palette.line,
             ),
             labelStyle: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: selected ? Colors.white : AppColors.ink,
+              color: selected ? Colors.white : context.palette.ink,
             ),
             shape: const RoundedRectangleBorder(
               borderRadius: AppRadius.pillAll,
@@ -291,46 +289,73 @@ class _SpotsBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: AppColors.brand,
       borderRadius: AppRadius.cardAll,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Row(
+        child: SizedBox(
+          height: 168,
+          child: Stack(
+            fit: StackFit.expand,
             children: <Widget>[
-              const Icon(
-                Icons.pin_drop_outlined,
-                color: Colors.white,
-                size: 26,
-              ),
-              const SizedBox(width: AppSpacing.md),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+              Image.asset('assets/images/medeu.jpg', fit: BoxFit.cover),
+              ColoredBox(color: context.palette.photoScrim),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: <Widget>[
-                    Text(
-                      'The city through their eyes',
-                      style: TextStyle(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                    const Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            'The city through their eyes',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 19,
+                              height: 1.2,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Places locals added themselves, and why they '
+                            'matter',
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.3,
+                              color: Colors.white70,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Places locals added themselves, and why they matter',
-                      style: TextStyle(fontSize: 12.5, color: Colors.white70),
+                    const SizedBox(width: AppSpacing.md),
+                    // The round arrow the design system puts on a feature
+                    // card: white on the photograph, never a gradient.
+                    Container(
+                      width: 42,
+                      height: 42,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: context.palette.surface,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 20,
+                        color: context.palette.ink,
+                      ),
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              const Icon(
-                Icons.arrow_forward_rounded,
-                color: Colors.white,
-                size: 19,
               ),
             ],
           ),

@@ -44,7 +44,7 @@ class _BookmarkBadgeState extends State<BookmarkBadge> {
       child: Material(
         color: widget.onDarkCover
             ? Colors.black.withValues(alpha: 0.38)
-            : Colors.white,
+            : context.palette.surfaceHigh,
         shape: const CircleBorder(),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -58,8 +58,10 @@ class _BookmarkBadgeState extends State<BookmarkBadge> {
                   : Icons.bookmark_outline_rounded,
               size: widget.size * 0.52,
               color: widget.isSaved
-                  ? AppColors.brand
-                  : (widget.onDarkCover ? Colors.white : AppColors.inkMuted),
+                  ? context.palette.brand
+                  : (widget.onDarkCover
+                        ? Colors.white
+                        : context.palette.inkMuted),
             ),
           ),
         ),

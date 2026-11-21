@@ -19,7 +19,7 @@ Future<MatchFilters?> showMatchSheet(BuildContext context) {
   return showModalBottomSheet<MatchFilters>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: context.palette.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
@@ -50,9 +50,9 @@ class _MatchSheetState extends State<_MatchSheet> {
   String? _language;
 
   void _apply() {
-    Navigator.of(context).pop(
-      MatchFilters(category: _category, pace: _pace, language: _language),
-    );
+    Navigator.of(
+      context,
+    ).pop(MatchFilters(category: _category, pace: _pace, language: _language));
   }
 
   @override
@@ -77,7 +77,7 @@ class _MatchSheetState extends State<_MatchSheet> {
                 width: 44,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.line,
+                  color: context.palette.line,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -113,9 +113,8 @@ class _MatchSheetState extends State<_MatchSheet> {
             Row(
               children: <Widget>[
                 OutlinedButton(
-                  onPressed: () => Navigator.of(context).pop(
-                    const MatchFilters(),
-                  ),
+                  onPressed: () =>
+                      Navigator.of(context).pop(const MatchFilters()),
                   child: const Text('Clear'),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -171,20 +170,19 @@ class _QuestionBlock extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                     color: selected == option
                         ? Colors.white
-                        : AppColors.ink,
+                        : context.palette.ink,
                   ),
-                  backgroundColor: Colors.white,
-                  selectedColor: AppColors.brand,
+                  backgroundColor: context.palette.surfaceHigh,
+                  selectedColor: context.palette.brandDeep,
                   side: BorderSide(
                     color: selected == option
-                        ? AppColors.brand
-                        : AppColors.line,
+                        ? context.palette.brand
+                        : context.palette.line,
                   ),
                   shape: const RoundedRectangleBorder(
                     borderRadius: AppRadius.pillAll,
                   ),
-                  onSelected: (bool value) =>
-                      onSelected(value ? option : null),
+                  onSelected: (bool value) => onSelected(value ? option : null),
                 ),
             ],
           ),

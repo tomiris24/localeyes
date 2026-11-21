@@ -21,9 +21,9 @@ class CatalogGridCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: AppRadius.cardAll,
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -32,12 +32,12 @@ class CatalogGridCard extends StatelessWidget {
           Expanded(
             child: Container(
               width: double.infinity,
-              color: AppColors.brandTint,
+              color: context.palette.brandTint,
               alignment: Alignment.center,
               child: Icon(
                 catalogIcon(item.category),
                 size: 34,
-                color: AppColors.brand,
+                color: context.palette.brand,
               ),
             ),
           ),
@@ -63,10 +63,10 @@ class CatalogGridCard extends StatelessWidget {
                 const SizedBox(height: 6),
                 Row(
                   children: <Widget>[
-                    const Icon(
+                    Icon(
                       Icons.star_rounded,
                       size: 14,
-                      color: AppColors.star,
+                      color: context.palette.star,
                     ),
                     const SizedBox(width: 2),
                     Text(item.ratingLabel, style: text.bodySmall),

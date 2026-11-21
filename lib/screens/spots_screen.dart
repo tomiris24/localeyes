@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../core/app_theme.dart';
-import '../data/mock_locals.dart';
 import '../models/local_person.dart';
 import '../models/spot.dart';
+import '../state/data_store.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/spot_card.dart';
 import 'local_profile_screen.dart';
@@ -27,14 +27,14 @@ class _SpotsScreenState extends State<SpotsScreen> {
 
   List<Spot> get _results {
     final List<Spot> base = widget.onlyBy == null
-        ? MockLocals.spots
-        : MockLocals.spotsBy(widget.onlyBy!);
+        ? DataStore.instance.spots
+        : DataStore.instance.spotsBy(widget.onlyBy!);
     if (_area == 'All areas') return base;
     return base.where((Spot s) => s.area == _area).toList();
   }
 
   void _openAuthor(Spot spot) {
-    final LocalPerson person = MockLocals.byId(spot.addedById);
+    final LocalPerson person = DataStore.instance.localById(spot.addedById);
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) => LocalProfileScreen(person: person),
@@ -73,25 +73,28 @@ class _SpotsScreenState extends State<SpotsScreen> {
                 height: 38,
                 child: ListView.separated(
                   scrollDirection: Axis.horizontal,
-                  itemCount: MockLocals.areas.length,
-                  separatorBuilder: (_, _) => const SizedBox(width: AppSpacing.sm),
+                  itemCount: DataStore.instance.areas.length,
+                  separatorBuilder: (_, _) =>
+                      const SizedBox(width: AppSpacing.sm),
                   itemBuilder: (BuildContext context, int index) {
-                    final String area = MockLocals.areas[index];
+                    final String area = DataStore.instance.areas[index];
                     final bool selected = area == _area;
                     return ChoiceChip(
                       label: Text(area),
                       selected: selected,
                       onSelected: (_) => setState(() => _area = area),
                       showCheckmark: false,
-                      backgroundColor: Colors.white,
-                      selectedColor: AppColors.brand,
+                      backgroundColor: context.palette.surfaceHigh,
+                      selectedColor: context.palette.brandDeep,
                       side: BorderSide(
-                        color: selected ? AppColors.brand : AppColors.line,
+                        color: selected
+                            ? context.palette.brand
+                            : context.palette.line,
                       ),
                       labelStyle: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: selected ? Colors.white : AppColors.ink,
+                        color: selected ? Colors.white : context.palette.ink,
                       ),
                       shape: const RoundedRectangleBorder(
                         borderRadius: AppRadius.pillAll,

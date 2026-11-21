@@ -27,7 +27,7 @@ class CatalogListTile extends StatelessWidget {
     final TextTheme text = Theme.of(context).textTheme;
 
     return Container(
-      color: Colors.white,
+      color: context.palette.surface,
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
@@ -36,8 +36,11 @@ class CatalogListTile extends StatelessWidget {
         children: <Widget>[
           CircleAvatar(
             radius: 24,
-            backgroundColor: AppColors.brandTint,
-            child: Icon(catalogIcon(item.category), color: AppColors.brand),
+            backgroundColor: context.palette.brandTint,
+            child: Icon(
+              catalogIcon(item.category),
+              color: context.palette.brand,
+            ),
           ),
           const SizedBox(width: AppSpacing.md),
           // Expanded keeps a long title from pushing the price off the row.
@@ -64,37 +67,37 @@ class CatalogListTile extends StatelessWidget {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.canvas,
+                          color: context.palette.canvas,
                           borderRadius: AppRadius.pillAll,
                         ),
                         child: Text(
                           item.category,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.brandDeep,
+                            color: context.palette.brandDeep,
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
-                    const Icon(
+                    Icon(
                       Icons.star_rounded,
                       size: 14,
-                      color: AppColors.star,
+                      color: context.palette.star,
                     ),
                     const SizedBox(width: 2),
                     Text(item.ratingLabel, style: text.bodySmall),
                     if (item.isNew) ...<Widget>[
                       const SizedBox(width: AppSpacing.sm),
-                      const Text(
+                      Text(
                         'NEW',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
-                          color: AppColors.success,
+                          color: context.palette.success,
                         ),
                       ),
                     ],

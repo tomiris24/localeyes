@@ -1,3 +1,5 @@
+import 'json.dart';
+
 /// A local guide who runs tours on LocalEyes.
 class Guide {
   const Guide({
@@ -11,6 +13,18 @@ class Guide {
     required this.bio,
     this.isVerified = true,
   });
+
+  factory Guide.fromJson(Map<String, dynamic> json) => Guide(
+    id: asString(json['id']),
+    name: asString(json['name'], 'A local guide'),
+    yearsOfExperience: asInt(json['yearsOfExperience']),
+    languages: asStringList(json['languages']),
+    rating: asDouble(json['rating']),
+    tourCount: asInt(json['tourCount']),
+    responseTime: asString(json['responseTime']),
+    bio: asString(json['bio']),
+    isVerified: asBool(json['isVerified'], true),
+  );
 
   final String id;
   final String name;

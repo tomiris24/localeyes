@@ -1,41 +1,131 @@
 import 'package:flutter/material.dart';
 
-/// Palette of LocalEyes: a neutral interface with one accent.
+/// Every colour the app paints with, in both themes.
 ///
-/// Deep teal stays the brand colour, but it is now spent only where it means
-/// something — icons, links, active states, verified badges. Everything that
-/// used to be a wash of pale mint is a cool grey instead, and the primary
-/// buttons are near-black, which keeps a photo-heavy feed calm and reads as
-/// current rather than as a 2018 teal app.
+/// The tokens are semantic — `canvas`, `surface`, `line`, `ink` — so a screen
+/// never has to know whether it is being drawn light or dark. The two
+/// instances below hold the values from the design system; widgets read them
+/// through `context.palette`, and the whole app follows the phone's
+/// appearance setting.
 ///
-/// White on [action] gives 16:1, white on [brand] gives 5.5:1 and [brand] on
-/// [surface] gives 4.8:1, so every pair passes WCAG AA.
-///
-/// [success] is the same teal on purpose. A separate green next to a green
-/// brand stops reading as a signal, so the verified badge and the "free
-/// today" pill borrow the accent rather than competing with it.
-class AppColors {
-  AppColors._();
+/// Fills are flat colours, never gradients: the photographs carry the screen,
+/// and a gradient on a card or a button only competes with them.
+@immutable
+class AppPalette extends ThemeExtension<AppPalette> {
+  const AppPalette({
+    required this.brightness,
+    required this.canvas,
+    required this.surface,
+    required this.surfaceHigh,
+    required this.line,
+    required this.ink,
+    required this.inkMuted,
+    required this.brand,
+    required this.brandDeep,
+    required this.brandTint,
+    required this.action,
+    required this.success,
+    required this.warning,
+    required this.error,
+    required this.star,
+    required this.photoScrim,
+  });
 
-  static const Color brand = Color(0xFF0F766E);
-  static const Color brandDeep = Color(0xFF115E59);
+  final Brightness brightness;
 
-  /// Pale teal wash behind an accent icon — the only tinted fill left.
-  static const Color brandTint = Color(0xFFE4F0EE);
+  /// The page itself.
+  final Color canvas;
 
-  /// Primary buttons and anything that has to win the page.
-  static const Color action = Color(0xFF111827);
+  /// Cards and sheets.
+  final Color surface;
 
-  static const Color ink = Color(0xFF111827);
-  static const Color inkMuted = Color(0xFF6B7280);
-  static const Color canvas = Color(0xFFF6F7F9);
+  /// Chips, input fills and segmented tracks — one step from a card.
+  final Color surfaceHigh;
 
-  /// Fills that sit on [canvas]: segmented tracks, chips, input backgrounds.
-  static const Color surface = Color(0xFFECEEF2);
+  final Color line;
+  final Color ink;
+  final Color inkMuted;
 
-  static const Color line = Color(0xFFE2E5EA);
-  static const Color star = Color(0xFFF5A623);
-  static const Color success = Color(0xFF0F766E);
+  /// Indigo, the one accent: the selected tab, a link, an active filter.
+  final Color brand;
+
+  /// The filled accent, deep enough to carry white text.
+  final Color brandDeep;
+
+  /// A wash of the accent behind an icon or a soft chip.
+  final Color brandTint;
+
+  /// Secondary buttons and the sticky bars — near-black, or near-white in the
+  /// dark theme.
+  final Color action;
+
+  final Color success;
+  final Color warning;
+  final Color error;
+  final Color star;
+
+  /// A flat scrim over a photograph, so white type stays readable on any
+  /// frame.
+  final Color photoScrim;
+
+  static const AppPalette light = AppPalette(
+    brightness: Brightness.light,
+    canvas: Color(0xFFF8FAFC),
+    surface: Color(0xFFFFFFFF),
+    surfaceHigh: Color(0xFFF1F5F9),
+    line: Color(0xFFE2E8F0),
+    ink: Color(0xFF0F172A),
+    inkMuted: Color(0xFF64748B),
+    brand: Color(0xFF6366F1),
+    brandDeep: Color(0xFF4F46E5),
+    brandTint: Color(0xFFEEF0FE),
+    action: Color(0xFF0F172A),
+    success: Color(0xFF10B981),
+    warning: Color(0xFFF59E0B),
+    error: Color(0xFFEF4444),
+    star: Color(0xFFF59E0B),
+    photoScrim: Color(0x73000000),
+  );
+
+  static const AppPalette dark = AppPalette(
+    brightness: Brightness.dark,
+    canvas: Color(0xFF0B0B0F),
+    surface: Color(0xFF1F2937),
+    surfaceHigh: Color(0xFF2A3545),
+    line: Color(0xFF334155),
+    ink: Color(0xFFF1F5F9),
+    inkMuted: Color(0xFF94A3B8),
+    brand: Color(0xFF8E97FF),
+    brandDeep: Color(0xFF4F46E5),
+    brandTint: Color(0xFF262A52),
+    action: Color(0xFF4F46E5),
+    success: Color(0xFF34D399),
+    warning: Color(0xFFFBBF24),
+    error: Color(0xFFF87171),
+    star: Color(0xFFFBBF24),
+    photoScrim: Color(0x8C000000),
+  );
+
+  bool get isDark => brightness == Brightness.dark;
+
+  /// What sits on top of [action] and [brandDeep].
+  Color get onAction => Colors.white;
+
+  @override
+  AppPalette copyWith({Brightness? brightness}) => this;
+
+  /// The two palettes are not blended: the app switches appearance with the
+  /// phone, and a half-light card on the way there would only flicker.
+  @override
+  AppPalette lerp(ThemeExtension<AppPalette>? other, double t) =>
+      t < 0.5 ? this : (other as AppPalette? ?? this);
+}
+
+extension AppPaletteContext on BuildContext {
+  /// The colours of the theme in force. Falls back to the light palette for a
+  /// widget pumped outside [AppTheme] — a test, usually.
+  AppPalette get palette =>
+      Theme.of(this).extension<AppPalette>() ?? AppPalette.light;
 }
 
 /// Shared spacing and radius values, so every screen uses the same rhythm.
@@ -59,151 +149,179 @@ class AppSpacing {
 class AppRadius {
   AppRadius._();
 
-  static const Radius card = Radius.circular(20);
+  static const Radius card = Radius.circular(16);
 
-  /// Buttons are rounded rectangles, not capsules: a 16 px corner next to a
-  /// 20 px card keeps the screen on one rhythm.
-  static const Radius button = Radius.circular(16);
-  static const BorderRadius buttonAll = BorderRadius.all(button);
+  /// Buttons and chips are capsules.
+  static const Radius button = Radius.circular(100);
   static const Radius pill = Radius.circular(100);
+  static const BorderRadius buttonAll = BorderRadius.all(button);
   static const BorderRadius cardAll = BorderRadius.all(card);
   static const BorderRadius pillAll = BorderRadius.all(pill);
+}
+
+/// How tall the interactive things are, from the design system.
+class AppSize {
+  AppSize._();
+
+  static const double buttonLarge = 48;
+  static const double buttonMedium = 44;
+  static const double buttonSmall = 36;
+  static const double chip = 32;
+  static const double search = 48;
+  static const double field = 44;
 }
 
 class AppTheme {
   AppTheme._();
 
-  static ThemeData light() {
-    final ColorScheme scheme = ColorScheme.fromSeed(seedColor: AppColors.brand)
-        .copyWith(primary: AppColors.brand, surface: Colors.white);
+  /// Plus Jakarta Sans, shipped with the app as one variable file. The weight
+  /// axis is driven by [FontVariation], which is what a variable font needs —
+  /// `fontWeight` alone only picks a named instance.
+  static const String fontFamily = 'PlusJakartaSans';
+
+  static TextStyle _font(
+    double size,
+    int weight, {
+    required double height,
+    required Color color,
+  }) => TextStyle(
+    fontFamily: fontFamily,
+    fontSize: size,
+    height: height,
+    color: color,
+    fontWeight: FontWeight.values[(weight ~/ 100) - 1],
+    fontVariations: <FontVariation>[FontVariation('wght', weight.toDouble())],
+  );
+
+  static ThemeData light() => _build(AppPalette.light);
+
+  static ThemeData dark() => _build(AppPalette.dark);
+
+  static ThemeData _build(AppPalette palette) {
+    final ColorScheme scheme =
+        ColorScheme.fromSeed(
+          seedColor: palette.brand,
+          brightness: palette.brightness,
+        ).copyWith(
+          primary: palette.brand,
+          onPrimary: palette.onAction,
+          surface: palette.surface,
+          onSurface: palette.ink,
+          error: palette.error,
+          outlineVariant: palette.line,
+        );
+
+    // The scale from the design system: H1 32 / H2 24 / H3 20 semibold,
+    // body 16 and 14 regular at 150%, caption 12.
+    final TextTheme text = TextTheme(
+      headlineMedium: _font(30, 700, height: 1.2, color: palette.ink),
+      headlineSmall: _font(24, 600, height: 1.2, color: palette.ink),
+      titleLarge: _font(20, 600, height: 1.3, color: palette.ink),
+      titleMedium: _font(16, 600, height: 1.3, color: palette.ink),
+      titleSmall: _font(14, 600, height: 1.3, color: palette.ink),
+      bodyLarge: _font(16, 400, height: 1.5, color: palette.ink),
+      bodyMedium: _font(14, 400, height: 1.5, color: palette.inkMuted),
+      bodySmall: _font(12, 400, height: 1.4, color: palette.inkMuted),
+      labelLarge: _font(14, 500, height: 1.2, color: palette.ink),
+    );
 
     return ThemeData(
       useMaterial3: true,
+      brightness: palette.brightness,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.canvas,
-      textTheme: const TextTheme(
-        headlineMedium: TextStyle(
-          fontSize: 26,
-          fontWeight: FontWeight.w800,
-          color: AppColors.ink,
-          height: 1.15,
-        ),
-        headlineSmall: TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.w700,
-          color: AppColors.ink,
-          height: 1.2,
-        ),
-        titleLarge: TextStyle(
-          fontSize: 19,
-          fontWeight: FontWeight.w700,
-          color: AppColors.ink,
-          height: 1.25,
-        ),
-        titleMedium: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: AppColors.ink,
-        ),
-        titleSmall: TextStyle(
-          fontSize: 13.5,
-          fontWeight: FontWeight.w600,
-          color: AppColors.ink,
-        ),
-        bodyLarge: TextStyle(fontSize: 15, height: 1.5, color: AppColors.ink),
-        bodyMedium: TextStyle(
-          fontSize: 13.5,
-          height: 1.45,
-          color: AppColors.inkMuted,
-        ),
-        bodySmall: TextStyle(
-          fontSize: 12,
-          height: 1.4,
-          color: AppColors.inkMuted,
-        ),
-        labelLarge: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-      ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.canvas,
+      extensions: <ThemeExtension<dynamic>>[palette],
+      fontFamily: fontFamily,
+      scaffoldBackgroundColor: palette.canvas,
+      canvasColor: palette.canvas,
+      textTheme: text,
+      appBarTheme: AppBarTheme(
+        backgroundColor: palette.canvas,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: TextStyle(
-          fontSize: 19,
-          fontWeight: FontWeight.w700,
-          color: AppColors.ink,
-        ),
-        iconTheme: IconThemeData(color: AppColors.ink),
+        titleTextStyle: _font(20, 600, height: 1.3, color: palette.ink),
+        iconTheme: IconThemeData(color: palette.ink),
       ),
-      dividerTheme: const DividerThemeData(
-        color: AppColors.line,
+      dividerTheme: DividerThemeData(
+        color: palette.line,
         thickness: 1,
         space: 1,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.action,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: AppColors.surface,
-          disabledForegroundColor: AppColors.inkMuted,
+          backgroundColor: palette.brandDeep,
+          foregroundColor: palette.onAction,
+          disabledBackgroundColor: palette.surfaceHigh,
+          disabledForegroundColor: palette.inkMuted,
           elevation: 0,
-          minimumSize: const Size(0, 52),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          minimumSize: const Size(0, AppSize.buttonLarge),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
           shape: const RoundedRectangleBorder(
             borderRadius: AppRadius.buttonAll,
           ),
-          textStyle: const TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0,
-          ),
+          textStyle: _font(
+            15,
+            600,
+            height: 1.2,
+            color: palette.onAction,
+          ).copyWith(letterSpacing: 0),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.ink,
-          minimumSize: const Size(0, 48),
-          side: const BorderSide(color: AppColors.line),
+          foregroundColor: palette.ink,
+          backgroundColor: palette.surface,
+          minimumSize: const Size(0, AppSize.buttonMedium),
+          side: BorderSide(color: palette.line),
           shape: const RoundedRectangleBorder(
             borderRadius: AppRadius.buttonAll,
           ),
-          textStyle: const TextStyle(
-            fontSize: 14.5,
-            fontWeight: FontWeight.w600,
-            letterSpacing: 0,
-          ),
+          textStyle: _font(
+            14,
+            600,
+            height: 1.2,
+            color: palette.ink,
+          ).copyWith(letterSpacing: 0),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.brand,
-          textStyle: const TextStyle(
-            fontSize: 14.5,
-            fontWeight: FontWeight.w600,
-          ),
+          foregroundColor: palette.brand,
+          textStyle: _font(14, 600, height: 1.2, color: palette.brand),
         ),
       ),
-      // The root screen uses a classic BottomNavigationBar, so its colours
-      // are set here once instead of on every tab.
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
+      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+        backgroundColor: palette.surface,
         type: BottomNavigationBarType.fixed,
         elevation: 0,
-        selectedItemColor: AppColors.brand,
-        unselectedItemColor: AppColors.inkMuted,
-        selectedLabelStyle: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-        ),
-        unselectedLabelStyle: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
+        selectedItemColor: palette.brand,
+        unselectedItemColor: palette.inkMuted,
+        selectedLabelStyle: _font(12, 700, height: 1.2, color: palette.brand),
+        unselectedLabelStyle: _font(
+          12,
+          500,
+          height: 1.2,
+          color: palette.inkMuted,
         ),
       ),
-      snackBarTheme: const SnackBarThemeData(
+      snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.action,
-        contentTextStyle: TextStyle(color: Colors.white, fontSize: 14),
+        backgroundColor: palette.action,
+        contentTextStyle: _font(14, 500, height: 1.4, color: palette.onAction),
+      ),
+      dialogTheme: DialogThemeData(backgroundColor: palette.surface),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: palette.surface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      iconTheme: IconThemeData(color: palette.ink),
+      // The design system asks for 200–300 ms, ease-out: Material's newer
+      // forward transition is exactly that, on both platforms.
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
+          TargetPlatform.iOS: FadeForwardsPageTransitionsBuilder(),
+          TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+        },
       ),
     );
   }

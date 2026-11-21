@@ -80,7 +80,7 @@ class TourCard extends StatelessWidget {
     return MediaQuery.withClampedTextScaling(
       maxScaleFactor: _maxTextScale,
       child: Material(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: AppRadius.cardAll,
         clipBehavior: Clip.antiAlias,
         child: InkWell(
@@ -180,7 +180,7 @@ class TourCard extends StatelessWidget {
             const SizedBox(height: 6),
             Row(
               children: <Widget>[
-                const Icon(Icons.star_rounded, size: 15, color: AppColors.star),
+                Icon(Icons.star_rounded, size: 15, color: context.palette.star),
                 const SizedBox(width: 3),
                 Expanded(
                   child: Text(

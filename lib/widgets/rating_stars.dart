@@ -23,7 +23,7 @@ class RatingStars extends StatelessWidget {
               ? Icons.star_half_rounded
               : Icons.star_outline_rounded,
           size: size,
-          color: AppColors.star,
+          color: context.palette.star,
         );
       }),
     );

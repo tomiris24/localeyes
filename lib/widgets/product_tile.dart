@@ -23,7 +23,7 @@ class ProductTile extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        color: Colors.white,
+        color: context.palette.surface,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
           vertical: AppSpacing.md,
@@ -38,11 +38,11 @@ class ProductTile extends StatelessWidget {
                 width: 68,
                 height: 68,
                 clipBehavior: Clip.antiAlias,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.all(Radius.circular(14)),
                   border: Border.fromBorderSide(
-                    BorderSide(color: AppColors.line),
+                    BorderSide(color: context.palette.line),
                   ),
                 ),
                 child: ProductImage(
@@ -74,10 +74,10 @@ class ProductTile extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      const Icon(
+                      Icon(
                         Icons.star_rounded,
                         size: 14,
-                        color: AppColors.star,
+                        color: context.palette.star,
                       ),
                       const SizedBox(width: 2),
                       Text(product.ratingLabel, style: text.bodySmall),
@@ -122,25 +122,25 @@ class CategoryBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: const BoxDecoration(
-        color: AppColors.canvas,
+      decoration: BoxDecoration(
+        color: context.palette.canvas,
         borderRadius: AppRadius.pillAll,
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(category.icon, size: 12, color: AppColors.brandDeep),
+          Icon(category.icon, size: 12, color: context.palette.brandDeep),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               category.label.toUpperCase(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10.5,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 0.4,
-                color: AppColors.brandDeep,
+                color: context.palette.brandDeep,
               ),
             ),
           ),

@@ -20,9 +20,9 @@ class SpotCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.palette.surface,
         borderRadius: AppRadius.cardAll,
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: context.palette.line),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -42,10 +42,10 @@ class SpotCard extends StatelessWidget {
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.favorite_rounded,
                     size: 13,
-                    color: AppColors.inkMuted,
+                    color: context.palette.inkMuted,
                   ),
                   const SizedBox(width: 4),
                   Text('${spot.saveCount}', style: text.bodySmall),
@@ -68,9 +68,9 @@ class SpotCard extends StatelessWidget {
           // where one person's opinion starts and the app's voice stops.
           Container(
             padding: const EdgeInsets.only(left: AppSpacing.md),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
-                left: BorderSide(color: AppColors.brand, width: 3),
+                left: BorderSide(color: context.palette.brand, width: 3),
               ),
             ),
             child: Text(
@@ -86,10 +86,10 @@ class SpotCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.person_outline_rounded,
                     size: 14,
-                    color: AppColors.inkMuted,
+                    color: context.palette.inkMuted,
                   ),
                   const SizedBox(width: 5),
                   Expanded(
@@ -97,10 +97,10 @@ class SpotCard extends StatelessWidget {
                       'Added by ${spot.addedByName}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.brand,
+                        color: context.palette.brand,
                       ),
                     ),
                   ),
@@ -129,14 +129,14 @@ class _Meta extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Icon(icon, size: 12, color: AppColors.inkMuted),
+          Icon(icon, size: 12, color: context.palette.inkMuted),
           const SizedBox(width: 4),
           Flexible(
             child: Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 12, color: AppColors.inkMuted),
+              style: TextStyle(fontSize: 12, color: context.palette.inkMuted),
             ),
           ),
         ],
